@@ -1,0 +1,12 @@
+# 旧WordPressサイトのURLから新サイトへの301リダイレクト (Cloudflare Pages)
+# 旧URL一覧はWP管理画面から取得後に追記する
+/clinic/          /clinic        301
+/medical/         /medical       301
+/facilities/      /clinic/facilities  301
+/access/          /access        301
+/recruit/         /recruit       301
+/category/news/   /news          301
+/category/news/*  /news          301
+/wp-admin/*       /              301
+/wp-login.php     /              301
+/feed/            /              301

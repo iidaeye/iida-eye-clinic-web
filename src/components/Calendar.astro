@@ -1,0 +1,206 @@
+---
+/**
+ * 休診カレンダー。定休ルール (clinic.json) で基本の表示を組み、
+ * PUBLIC_CALENDAR_API_URL から臨時休診・午後休診・2診体制などの例外を取得して上書きする。
+ * 期待する JSON (docs/status-api.md 参照):
+ *   { "2026-10-30": "pm-closed", "2026-10-31": "closed", "2026-11-26": "note" }
+ * 値: closed | pm-closed | note (お知らせ参照)
+ */
+import { clinic, type Locale } from '@/lib/site';
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = 'ja' } = Astro.props;
+const api = import.meta.env.PUBLIC_CALENDAR_API_URL ?? '';
+const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
+---
+
+<div class="calendar" data-calendar-api={api} data-rules={rules} data-locale={locale}>
+  <div class="calendar__head">
+    <p class="title">{locale === 'ja' ? '休診カレンダー' : 'Closed days'}</p>
+    <div class="calendar__nav">
+      <button type="button" data-cal-prev aria-label={locale === 'ja' ? '前の月' : 'Previous month'}>‹</button>
+      <span data-cal-title class="calendar__month"></span>
+      <button type="button" data-cal-next aria-label={locale === 'ja' ? '次の月' : 'Next month'}>›</button>
+    </div>
+  </div>
+  <div class="calendar__grid" data-cal-grid role="grid"></div>
+  <ul class="calendar__legend">
+    <li><span class="dot dot--closed"></span>{locale === 'ja' ? '休診' : 'Closed'}</li>
+    <li><span class="dot dot--pm"></span>{locale === 'ja' ? '午後休診' : 'PM closed'}</li>
+    <li><span class="dot dot--note"></span>{locale === 'ja' ? 'お知らせをご確認ください' : 'See notices'}</li>
+  </ul>
+</div>
+
+<script>
+  type Kind = 'closed' | 'pm-closed' | 'note';
+  const root = document.querySelector<HTMLElement>('[data-calendar-api]');
+  if (root) {
+    const ja = root.dataset.locale !== 'en';
+    const rules = JSON.parse(root.dataset.rules!) as { am: string[]; pm: string[] };
+    const grid = root.querySelector<HTMLElement>('[data-cal-grid]')!;
+    const title = root.querySelector<HTMLElement>('[data-cal-title]')!;
+    let exceptions: Record<string, Kind> = {};
+    const today = new Date();
+    let y = today.getFullYear();
+    let m = today.getMonth();
+
+    const dayNames = ja ? ['日', '月', '火', '水', '木', '金', '土'] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    const ruleIndex = (dow: number) => (dow + 6) % 7; // JS: 0=日 → clinic.json: 0=月
+
+    function baseKind(date: Date): Kind | null {
+      const i = ruleIndex(date.getDay());
+      const am = rules.am[i];
+      const pm = rules.pm[i];
+      if (am !== 'open' && pm !== 'open') return 'closed';
+      if (am === 'open' && pm !== 'open') return 'pm-closed';
+      return null;
+    }
+
+    function render() {
+      title.textContent = ja ? `${y}年${m + 1}月` : new Date(y, m, 1).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+      const first = new Date(y, m, 1);
+      const last = new Date(y, m + 1, 0);
+      const cells: string[] = dayNames.map((d) => `<div class="calendar__dow" role="columnheader">${d}</div>`);
+      for (let i = 0; i < first.getDay(); i++) cells.push('<div class="calendar__empty"></div>');
+      for (let d = 1; d <= last.getDate(); d++) {
+        const date = new Date(y, m, d);
+        const key = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const kind = exceptions[key] ?? baseKind(date);
+        const isToday = date.toDateString() === today.toDateString();
+        cells.push(
+          `<div class="calendar__day${kind ? ` is-${kind}` : ''}${isToday ? ' is-today' : ''}" role="gridcell"><span>${d}</span></div>`,
+        );
+      }
+      grid.innerHTML = cells.join('');
+    }
+
+    root.querySelector('[data-cal-prev]')?.addEventListener('click', () => {
+      m--;
+      if (m < 0) { m = 11; y--; }
+      render();
+    });
+    root.querySelector('[data-cal-next]')?.addEventListener('click', () => {
+      m++;
+      if (m > 11) { m = 0; y++; }
+      render();
+    });
+
+    render();
+    const api = root.dataset.calendarApi;
+    if (api) {
+      fetch(api, { cache: 'no-store' })
+        .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+        .then((data) => { exceptions = data ?? {}; render(); })
+        .catch(() => { /* 取得失敗時は定休ルールのみ表示 */ });
+    }
+  }
+</script>
+
+<style>
+  .calendar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .calendar__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .calendar__nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .calendar__nav button {
+    width: 36px;
+    height: 36px;
+    border: var(--border-hair) solid var(--line-200);
+    border-radius: var(--radius-sm);
+    background: var(--surface-card);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+  }
+  .calendar__month {
+    min-width: 7em;
+    text-align: center;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .calendar__grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+    padding: 12px;
+    background: var(--surface-card);
+    border: var(--border-hair) solid var(--line-200);
+    border-radius: var(--radius-md);
+  }
+  .calendar__dow {
+    padding: 4px 0;
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--ink-500);
+  }
+  .calendar__day {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .calendar__day.is-closed {
+    background: var(--line-050);
+    color: var(--ink-disabled);
+  }
+  .calendar__day.is-pm-closed {
+    background: linear-gradient(to bottom, transparent 50%, var(--line-050) 50%);
+  }
+  .calendar__day.is-note {
+    box-shadow: inset 0 0 0 2px var(--brand-green);
+  }
+  .calendar__day.is-today span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-pill);
+    background: var(--navy-700);
+    color: var(--surface-000);
+  }
+  .calendar__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--ink-500);
+  }
+  .calendar__legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+  .dot--closed {
+    background: var(--line-050);
+    border: 1px solid var(--line-100);
+  }
+  .dot--pm {
+    background: linear-gradient(to bottom, var(--surface-card) 50%, var(--line-050) 50%);
+    border: 1px solid var(--line-100);
+  }
+  .dot--note {
+    box-shadow: inset 0 0 0 2px var(--brand-green);
+  }
+</style>

@@ -1,0 +1,107 @@
+---
+import Base from '@/layouts/Base.astro';
+import Hours from '@/components/Hours.astro';
+import { clinic } from '@/lib/site';
+---
+
+<Base
+  title={`${clinic.nameEn} | Eye clinic in Shizuoka City`}
+  description="Iida Eye Clinic in Aoi-ku, Shizuoka City. Three board-certified ophthalmologists. Day surgery for cataract, glaucoma, vitreoretinal and lacrimal conditions."
+  locale="en"
+  bareTitle
+  alternate={{ ja: '/', en: '/en' }}
+>
+  <section class="container hero">
+    <p class="eyebrow">Aoi-ku, Shizuoka City ・ since {clinic.founded}</p>
+    <h1 class="tagline">{clinic.taglineEn}</h1>
+    <p class="lead">Three board-certified ophthalmologists provide general eye care and day surgery, from children's eye health to cataract surgery for older adults. We are your neighbourhood eye clinic in Shizuoka.</p>
+    <p class="muted small">Announcements, the clinic calendar and columns are published in Japanese. Please use your browser's translation feature, or ask our staff.</p>
+  </section>
+
+  <section class="container section grid">
+    <div class="block">
+      <Hours locale="en" />
+    </div>
+    <div class="block">
+      <h2 class="heading">For Your Visit</h2>
+      <p>No appointment is needed for a regular consultation. Please bring your Japanese health insurance card (or My Number card) and any medications you take. Same-day check-in is available through our official LINE account.</p>
+      <ul class="links">
+        <li><a class="card" href="/en/visit">For Your Visit — check-in, insurance, payment<span>→</span></a></li>
+        <li><a class="card" href="/en/services">Services — what we treat<span>→</span></a></li>
+        <li><a class="card" href="/en/about">About Us — doctors and the clinic<span>→</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="container section grid">
+    <div class="block">
+      <h2 class="heading">Access</h2>
+      <iframe class="map" src={clinic.mapEmbed} width="600" height="240" style="border:0" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map of Iida Eye Clinic"></iframe>
+    </div>
+    <div class="block">
+      <p>{clinic.address.en}<br />TEL <a href={clinic.telHref}>{clinic.tel}</a><br />Free parking for 40 cars.</p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-block: var(--space-6);
+  }
+  .tagline {
+    font-family: var(--font-serif);
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+    color: var(--ink-900);
+  }
+  .lead {
+    max-width: 640px;
+  }
+  .small {
+    font-size: 13px;
+  }
+  .grid {
+    display: grid;
+    gap: var(--space-6);
+  }
+  .block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .links .card {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 56px;
+    padding: 14px 18px;
+    font-weight: 700;
+  }
+  .links .card span {
+    color: var(--navy-700);
+  }
+  .map {
+    width: 100%;
+    height: 220px;
+    border-radius: var(--radius-md);
+  }
+  @media (min-width: 768px) {
+    .tagline {
+      font-size: 44px;
+    }
+    .grid {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-7);
+    }
+  }
+</style>

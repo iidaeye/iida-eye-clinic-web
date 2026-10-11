@@ -1,0 +1,19 @@
+---
+import Page from '@/layouts/Page.astro';
+---
+
+<Page title="ページが見つかりません" description="お探しのページは見つかりませんでした。" eyebrow="404" cta={false}>
+  <div class="nf">
+    <p>お探しのページは移動または削除された可能性があります。URLをご確認いただくか、トップページからお探しください。</p>
+    <p><a class="btn btn--solid" href="/">トップページへ</a></p>
+  </div>
+</Page>
+
+<style>
+  .nf {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    max-width: 640px;
+  }
+</style>

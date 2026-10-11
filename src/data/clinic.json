@@ -1,0 +1,50 @@
+{
+  "name": "イイダ眼科医院",
+  "nameEn": "Iida Eye Clinic",
+  "corporation": "医療法人",
+  "founded": 1997,
+  "tagline": "見えるを守り、暮らすを支える。",
+  "taglineEn": "See well. Live well.",
+  "taglineEnLiteral": "Protecting your sight, supporting your life.",
+  "address": {
+    "postal": "420-0805",
+    "pref": "静岡県",
+    "city": "静岡市葵区",
+    "street": "城北94",
+    "full": "静岡県静岡市葵区城北94",
+    "en": "94 Johoku, Aoi-ku, Shizuoka City, Shizuoka 420-0805, Japan"
+  },
+  "tel": "054-246-3883",
+  "telHref": "tel:0542463883",
+  "geo": { "lat": 35.00152, "lng": 138.39064 },
+  "mapEmbed": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3268.2070666818922!2d138.39063895092517!3d35.00152137445832!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x601a4a7141449be7%3A0x70e2391d53b41d0!2z44Kk44Kk44OA55y856eR5Yy76Zmi!5e0!3m2!1sja!2sjp!4v1542178466455",
+  "parking": "駐車場 40台 無料(隣接の第2駐車場あり)",
+  "links": {
+    "line": "https://lin.ee/yqJct6l",
+    "lineGuide": "https://line.iida-eye.net/static/clinic-guide",
+    "instagram": "https://www.instagram.com/iida_eye_clinic"
+  },
+  "hours": {
+    "reception": [
+      { "label": "午前", "time": "8:15〜11:00" },
+      { "label": "午後", "time": "12:00〜17:00" }
+    ],
+    "closedNote": "休診: 木・土曜午後、水・日曜、祝日(水曜は手術日)",
+    "closedNoteEn": "Closed: Thu & Sat afternoons, Wed, Sun and national holidays (Wednesday is surgery day)",
+    "days": ["月", "火", "水", "木", "金", "土", "日"],
+    "daysEn": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "am": ["open", "open", "surgery", "open", "open", "open", "closed"],
+    "pm": ["open", "open", "surgery", "closed", "open", "closed", "closed"]
+  },
+  "doctors": [
+    { "role": "院長", "name": "[氏名]", "title": "日本眼科学会認定 眼科専門医" },
+    { "role": "医師", "name": "[氏名]", "title": "日本眼科学会認定 眼科専門医" },
+    { "role": "医師", "name": "[氏名]", "title": "日本眼科学会認定 眼科専門医" }
+  ],
+  "surgeries": [
+    { "slug": "cataract", "name": "白内障手術", "short": "多焦点眼内レンズ・選定療養にも対応", "lead": "濁った水晶体を眼内レンズに置き換えます。単焦点・単焦点プラス・トーリック・多焦点(選定療養)から、目の状態と生活に合わせて選びます。" },
+    { "slug": "glaucoma", "name": "緑内障手術", "short": "流出路再建術(眼内法)・iStent", "lead": "流出路再建術(眼内法)や眼内ドレーン(iStent)により、眼圧を下げます。白内障手術と同時に行う場合もあります。" },
+    { "slug": "vitrectomy", "name": "硝子体手術", "short": "黄斑前膜・黄斑円孔ほか", "lead": "黄斑前膜・黄斑円孔・硝子体出血などに対し、眼の奥の硝子体を取り除いて網膜の状態を整えます。" },
+    { "slug": "lacrimal", "name": "涙道手術", "short": "なみだ目・流涙症の治療", "lead": "涙の通り道(涙道)の詰まりによる「なみだ目」に対し、涙道内視鏡などで通り道を開きます。" }
+  ]
+}

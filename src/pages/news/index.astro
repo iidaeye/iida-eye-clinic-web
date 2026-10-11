@@ -1,0 +1,17 @@
+---
+import Page from '@/layouts/Page.astro';
+import NewsList from '@/components/NewsList.astro';
+import { getNews } from '@/lib/content';
+
+const items = await getNews();
+---
+
+<Page
+  title="お知らせ"
+  description="イイダ眼科医院からのお知らせ。受付時間の変更、休診、新しい取り組みなど。"
+  eyebrow="NEWS"
+  crumbs={[{ label: 'お知らせ' }]}
+  cta={false}
+>
+  <NewsList items={items} withSummary />
+</Page>

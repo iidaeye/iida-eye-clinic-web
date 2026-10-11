@@ -1,0 +1,136 @@
+---
+/**
+ * ただいまの診療状況。既存システム (line.iida-eye.net) の API をブラウザから取得して表示する。
+ *
+ * API の URL は PUBLIC_STATUS_API_URL (環境変数) で指定。未設定・取得失敗時は案内文にフォールバックする。
+ * 期待する JSON (docs/status-api.md 参照):
+ *   { "open": true, "waiting": 12, "calling": 38, "message": "本日は3診体制です", "updatedAt": "2026-10-11T09:42:00+09:00" }
+ * 実際のレスポンス形式が分かり次第、下の <script> 内 normalize() を合わせる。
+ */
+import { clinic, type Locale } from '@/lib/site';
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = 'ja' } = Astro.props;
+const api = import.meta.env.PUBLIC_STATUS_API_URL ?? '';
+---
+
+<div class="card card--primary status" data-status-api={api} data-locale={locale}>
+  <div class="status__head">
+    <p class="title">{locale === 'ja' ? 'ただいまの診療状況' : 'Current clinic status'}</p>
+    <span class="status__badge" data-status-badge></span>
+  </div>
+  <div class="status__numbers">
+    <div class="status__num">
+      <span class="caption">{locale === 'ja' ? '現在の待ち' : 'Waiting'}</span>
+      <span class="status__value"><span data-status-waiting>–</span><small>{locale === 'ja' ? '人' : ''}</small></span>
+    </div>
+    <div class="status__num">
+      <span class="caption">{locale === 'ja' ? '呼び出し中' : 'Now calling'}</span>
+      <span class="status__value"><span data-status-calling>–</span><small>{locale === 'ja' ? '番' : ''}</small></span>
+    </div>
+  </div>
+  <p class="caption" data-status-message>{locale === 'ja' ? '診療状況を取得しています…' : 'Loading…'}</p>
+  <a class="btn btn--line btn--block" href={clinic.links.line} target="_blank" rel="noopener">
+    {locale === 'ja' ? 'LINEで順番をとる' : 'Check in via LINE'}
+  </a>
+</div>
+
+<script>
+  type Status = { open: boolean; waiting?: number; calling?: number; message?: string; updatedAt?: string };
+
+  // 既存APIのレスポンスを画面用の形に正規化する。形式が確定したらここを調整する
+  function normalize(raw: any): Status {
+    return {
+      open: Boolean(raw.open ?? raw.isOpen ?? raw.status === 'open'),
+      waiting: raw.waiting ?? raw.waitingCount,
+      calling: raw.calling ?? raw.callingNumber,
+      message: raw.message,
+      updatedAt: raw.updatedAt ?? raw.updated_at,
+    };
+  }
+
+  const root = document.querySelector<HTMLElement>('[data-status-api]');
+  if (root) {
+    const api = root.dataset.statusApi;
+    const ja = root.dataset.locale !== 'en';
+    const badge = root.querySelector<HTMLElement>('[data-status-badge]')!;
+    const waiting = root.querySelector<HTMLElement>('[data-status-waiting]')!;
+    const calling = root.querySelector<HTMLElement>('[data-status-calling]')!;
+    const message = root.querySelector<HTMLElement>('[data-status-message]')!;
+
+    const fail = () => {
+      badge.className = 'status-closed';
+      badge.textContent = ja ? '取得できません' : 'Unavailable';
+      message.textContent = ja
+        ? '診療状況は公式LINEのミニアプリでご確認ください。'
+        : 'Please check the status in our official LINE mini app.';
+    };
+
+    if (!api) {
+      fail();
+    } else {
+      fetch(api, { cache: 'no-store' })
+        .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+        .then((raw) => {
+          const s = normalize(raw);
+          badge.className = s.open ? 'status-open' : 'status-closed';
+          badge.textContent = s.open ? (ja ? '受付中' : 'Open') : ja ? '受付終了' : 'Closed';
+          waiting.textContent = s.waiting != null ? String(s.waiting) : '–';
+          calling.textContent = s.calling != null ? String(s.calling) : '–';
+          const t = s.updatedAt
+            ? new Date(s.updatedAt).toLocaleTimeString(ja ? 'ja-JP' : 'en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' })
+            : '';
+          message.textContent = [t && `${ja ? '更新' : 'Updated'} ${t}`, s.message].filter(Boolean).join(' ・ ');
+        })
+        .catch(fail);
+    }
+  }
+</script>
+
+<style>
+  .status {
+    gap: 12px;
+  }
+  .status__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .status__numbers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .status__num {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    background: var(--surface-000);
+    border-radius: var(--radius-sm);
+  }
+  .status__value {
+    font-family: var(--font-serif);
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--navy-700);
+  }
+  .status__value small {
+    margin-left: 3px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .status .btn {
+    min-height: 52px;
+    font-size: 15px;
+  }
+  @media (min-width: 768px) {
+    .status__value {
+      font-size: 34px;
+    }
+  }
+</style>

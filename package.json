@@ -1,0 +1,33 @@
+{
+  "name": "iida-eye-clinic-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "イイダ眼科医院 公式サイト (iida-eye-clinic.jp)",
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "tokens": "node scripts/build-tokens.mjs",
+    "dev": "pnpm tokens && astro dev",
+    "build": "pnpm tokens && astro build",
+    "preview": "astro preview",
+    "check": "pnpm tokens && astro check",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.3.8",
+    "sharp": "^0.34.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^5.9.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp"
+    ]
+  }
+}

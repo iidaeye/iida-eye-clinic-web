@@ -1,0 +1,76 @@
+---
+import { clinic, type Locale } from '@/lib/site';
+
+interface Props {
+  locale?: Locale;
+  title?: string;
+  text?: string;
+}
+const { locale = 'ja' } = Astro.props;
+const title = Astro.props.title ?? (locale === 'ja' ? 'ご相談は、まず外来の診察で' : 'Start with a regular consultation');
+const text =
+  Astro.props.text ??
+  (locale === 'ja'
+    ? '治療の要否や方法は、診察と検査のうえでご説明します。受付方法は「受診案内」をご覧ください。'
+    : 'We explain treatment options after an examination. See "For Your Visit" for how to check in.');
+---
+
+<section class="container">
+  <div class="cta">
+    <div class="cta__text">
+      <p class="cta__title">{title}</p>
+      <p class="cta__body">{text}</p>
+    </div>
+    <div class="cta__actions">
+      <a class="btn btn--ghost" href={locale === 'ja' ? '/visit' : '/en/visit'}>{locale === 'ja' ? '受診案内を見る' : 'For Your Visit'}</a>
+      <a class="btn btn--line" href={clinic.links.line} target="_blank" rel="noopener">{locale === 'ja' ? 'LINEで順番をとる' : 'Check in via LINE'}</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    margin-top: var(--space-8);
+    padding: var(--space-6) var(--space-5);
+    background: var(--navy-700);
+    color: var(--surface-000);
+    border-radius: var(--radius-md);
+  }
+  .cta__title {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    line-height: 1.5;
+  }
+  .cta__body {
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--navy-100);
+  }
+  .cta__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  @media (min-width: 768px) {
+    .cta {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-6);
+      padding: 40px 48px;
+    }
+    .cta__title {
+      font-size: 22px;
+    }
+    .cta__actions {
+      flex-direction: row;
+      flex-shrink: 0;
+    }
+  }
+</style>

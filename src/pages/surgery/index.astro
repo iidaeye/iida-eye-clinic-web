@@ -1,0 +1,193 @@
+---
+import Page from '@/layouts/Page.astro';
+import SurgeryCards from '@/components/SurgeryCards.astro';
+
+const steps = [
+  { n: '01', title: '診察・検査', text: '通常の外来で診察し、手術が必要かどうか、どの術式が適しているかを判断します。' },
+  { n: '02', title: '説明と同意', text: '手術の内容、期待できる効果、起こりうる合併症、費用を説明し、ご本人の同意のうえで日程を決めます。' },
+  { n: '03', title: '術前検査', text: '眼の精密検査と全身状態の確認を行います。白内障では眼内レンズの度数を決める検査を含みます。' },
+  { n: '04', title: '手術当日(水曜)', text: '手術の約2時間前にご来院ください。局所麻酔で行い、術後は回復室で15分ほど安静にしてからご帰宅いただきます。' },
+  { n: '05', title: '術後の通院', text: '翌日・1週間後・1か月後を目安に経過を診ます。点眼薬の使い方と生活上の注意をお伝えします。' },
+];
+
+const onTheDay = [
+  { k: '来院時間', v: '白内障・緑内障・硝子体などの内眼手術は、手術の約2時間前にご来院いただきます。具体的な時刻は事前にお伝えします。' },
+  { k: '手術後', v: '手術後は回復室で15分ほど安静にしていただき、医師の確認を経てご帰宅となります。' },
+  { k: '付き添い・送迎', v: '当日はご自身で運転できないため、原則としてご家族などの付き添いをお願いしています。ご事情によりタクシー等でお一人で受けていただくこともできますので、ご相談ください。当院に送迎サービスはありません。' },
+  { k: '食事・服薬', v: '食事は普段どおりで構いません。白内障手術では抗凝固薬(血液をさらさらにする薬)を休む必要はありませんが、術式によっては休薬が必要な場合があり、該当する方には事前に個別にお伝えします。' },
+  { k: '服装', v: '前開きで脱ぎ着しやすい服装でお越しください。化粧・整髪料は控えてください。' },
+  { k: '費用', v: '保険診療です。自己負担額は術式と負担割合により異なり、診察時に目安をお伝えします。多焦点眼内レンズは選定療養の費用が別途かかります。' },
+];
+
+const faq = [
+  { q: '手術は痛いですか?', a: '点眼や局所の麻酔を行うため、強い痛みを感じることはほとんどありません。手術中は光がまぶしく感じられます。' },
+  { q: '両目を同じ日に手術できますか?', a: '原則として片目ずつ行い、1〜2週間の間隔を空けてもう片方を行います。' },
+  { q: '仕事はいつから再開できますか?', a: '術式と仕事の内容によります。デスクワークは翌日から可能なことが多く、診察時にご相談ください。' },
+  { q: '他院からの紹介でも手術を受けられますか?', a: 'はい。紹介状をお持ちのうえ、まず通常の外来を受診してください。' },
+];
+---
+
+<Page
+  title="手術のご案内"
+  description="イイダ眼科医院の手術案内。白内障・緑内障・硝子体・涙道の手術を毎週水曜日に日帰りで行っています。手術までの流れ、当日のご案内、よくあるご質問。"
+  eyebrow="SURGERY"
+  lead="白内障・緑内障・硝子体・涙道の手術を、日帰りで行っています。診察から手術、術後の通院まで、同じ医師が責任をもって診ます。"
+  crumbs={[{ href: '/medical', label: '診療案内' }, { label: '手術のご案内' }]}
+  heroImage={{ src: '/images/placeholder-interior.svg', alt: '手術室' }}
+  cta={{ title: '手術のご相談は、まず外来の診察で', text: '手術の適応や術式の選択は、診察と検査のうえで判断します。受付方法は「受診案内」をご覧ください。' }}
+>
+  <section>
+    <h2 class="heading">当院の手術体制<span class="sub">OVERVIEW</span></h2>
+    <div class="cards-3">
+      <div class="card card--accent">
+        <p class="title">毎週水曜日が手術日</p>
+        <p class="small">水曜日は手術に専念し、通常の外来診療は行っていません。手術の予定は診察時にご相談のうえ決めます。</p>
+      </div>
+      <div class="card card--accent">
+        <p class="title">日帰り手術</p>
+        <p class="small">入院の必要はなく、手術当日にご帰宅いただけます。術後は翌日から数回、経過を診る通院があります。</p>
+      </div>
+      <div class="card card--accent">
+        <p class="title">3名の眼科専門医</p>
+        <p class="small">診察を担当した医師が執刀し、術後も同じ医師が診ます。説明から回復まで、一貫してお付き合いします。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="procedures">
+    <h2 class="heading">対応する手術<span class="sub">PROCEDURES</span></h2>
+    <SurgeryCards detailed />
+  </section>
+
+  <section>
+    <h2 class="heading">手術までの流れ<span class="sub">FLOW</span></h2>
+    <ol class="steps">
+      {steps.map((s) => (
+        <li class="step">
+          <span class="step__n">{s.n}</span>
+          <p class="title">{s.title}</p>
+          <p class="small">{s.text}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="two-col">
+    <div>
+      <h2 class="heading">手術当日のご案内<span class="sub">ON THE DAY</span></h2>
+      <dl class="rule-list defs">
+        {onTheDay.map((d) => (
+          <div class="def">
+            <dt class="title">{d.k}</dt>
+            <dd class="small">{d.v}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+    <div>
+      <h2 class="heading">よくあるご質問<span class="sub">FAQ</span></h2>
+      <dl class="rule-list">
+        {faq.map((f) => (
+          <div class="faq">
+            <dt class="title">{f.q}</dt>
+            <dd class="small">{f.a}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+</Page>
+
+<style>
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+  .small {
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  .cards-3 {
+    display: grid;
+    gap: 12px;
+  }
+  /* 紺背景なしで術式カードを使うため、地色を合わせる */
+  .procedures :global(.surgery-card) {
+    background: var(--surface-card);
+    border: var(--border-hair) solid var(--line-100);
+    border-top: var(--border-accent) solid var(--brand-green);
+  }
+  .steps {
+    display: grid;
+    gap: 0;
+    border-top: var(--border-rule) solid var(--line-strong);
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 0;
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .step:last-child {
+    border-bottom: 0;
+  }
+  .step__n {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--navy-700);
+  }
+  .two-col {
+    display: grid;
+    gap: var(--space-7);
+  }
+  .two-col > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+  .def,
+  .faq {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  dd {
+    margin: 0;
+  }
+  @media (min-width: 768px) {
+    .cards-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .steps {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+    .step {
+      padding: 24px 20px;
+      border-bottom: 0;
+      border-right: var(--border-hair) solid var(--line-100);
+    }
+    .step:first-child {
+      padding-left: 0;
+    }
+    .step:last-child {
+      padding-right: 0;
+      border-right: 0;
+    }
+    .def {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 16px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .two-col {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

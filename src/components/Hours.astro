@@ -1,0 +1,107 @@
+---
+/** 診療時間表。データは clinic.json の hours から生成 (画像ではなくHTML表) */
+import { clinic, type Locale } from '@/lib/site';
+
+interface Props {
+  locale?: Locale;
+  heading?: boolean;
+}
+const { locale = 'ja', heading = true } = Astro.props;
+const h = clinic.hours;
+const days = locale === 'ja' ? h.days : h.daysEn;
+const rows = [
+  { label: locale === 'ja' ? '午前' : 'AM', cells: h.am },
+  { label: locale === 'ja' ? '午後' : 'PM', cells: h.pm },
+];
+const mark = (v: string) => {
+  if (v === 'open') return { text: '●', cls: 'open', sr: locale === 'ja' ? '診療' : 'Open' };
+  if (v === 'surgery') return { text: locale === 'ja' ? '手術' : 'Surg.', cls: 'surgery', sr: locale === 'ja' ? '手術日' : 'Surgery day' };
+  return { text: '／', cls: 'closed', sr: locale === 'ja' ? '休診' : 'Closed' };
+};
+---
+
+<div class="hours">
+  {heading && <p class="title">{locale === 'ja' ? '診療時間' : 'Hours'}</p>}
+  <div class="hours__table" role="table" aria-label={locale === 'ja' ? '診療時間' : 'Hours'}>
+    <div class="hours__row hours__row--head" role="row">
+      <div role="columnheader"></div>
+      {days.map((d) => <div role="columnheader">{d}</div>)}
+    </div>
+    {rows.map((r) => (
+      <div class="hours__row" role="row">
+        <div class="hours__label" role="rowheader">{r.label}</div>
+        {r.cells.map((c) => {
+          const m = mark(c);
+          return (
+            <div role="cell" class={`hours__cell hours__cell--${m.cls}`}>
+              <span aria-hidden="true">{m.text}</span>
+              <span class="visually-hidden">{m.sr}</span>
+            </div>
+          );
+        })}
+      </div>
+    ))}
+  </div>
+  <p class="caption">
+    {locale === 'ja' ? '受付' : 'Reception'} {h.reception.map((r) => r.time).join(' / ')}<br />
+    {locale === 'ja' ? h.closedNote : h.closedNoteEn}
+  </p>
+</div>
+
+<style>
+  .hours {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .hours__table {
+    background: var(--surface-card);
+    border: var(--border-hair) solid var(--line-200);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    font-size: 12.5px;
+    text-align: center;
+  }
+  .hours__row {
+    display: grid;
+    grid-template-columns: 1.3fr repeat(7, minmax(0, 1fr));
+  }
+  .hours__row + .hours__row {
+    border-top: var(--border-hair) solid var(--line-050);
+  }
+  .hours__row--head > div {
+    padding: 9px 2px;
+    background: var(--surface-100);
+    font-weight: 700;
+  }
+  .hours__row > div {
+    padding: 11px 2px;
+  }
+  .hours__label {
+    font-weight: 700;
+  }
+  .hours__cell--open {
+    color: var(--navy-700);
+  }
+  .hours__cell--surgery {
+    color: var(--ink-500);
+    font-size: 10px;
+  }
+  .hours__cell--closed {
+    color: var(--ink-disabled);
+  }
+  @media (min-width: 768px) {
+    .hours__table {
+      font-size: 13px;
+    }
+    .hours__row--head > div {
+      padding: 10px 4px;
+    }
+    .hours__row > div {
+      padding: 12px 4px;
+    }
+    .hours__cell--surgery {
+      font-size: 11px;
+    }
+  }
+</style>

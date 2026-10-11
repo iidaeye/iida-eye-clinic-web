@@ -1,0 +1,93 @@
+---
+import { clinic, footerNav, navEn, type Locale } from '@/lib/site';
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = 'ja' } = Astro.props;
+const items = locale === 'ja' ? footerNav : [...navEn, { href: '/', label: '日本語' }];
+---
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <div class="footer__brand">
+      <img src="/logo/logo-vertical.svg" alt={`${clinic.name} ${clinic.nameEn}`} width="124" height="80" />
+      <p class="caption">
+        〒{clinic.address.postal} {clinic.address.full}<br />
+        TEL <a href={clinic.telHref}>{clinic.tel}</a>
+      </p>
+    </div>
+    <div class="footer__nav">
+      <ul>
+        {items.map((item) => (
+          <li><a href={item.href}>{item.label}</a></li>
+        ))}
+      </ul>
+      <p class="caption copyright">© Iida eye clinic. since {clinic.founded}</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    margin-top: var(--space-8);
+    padding: var(--space-6) 0 var(--space-6);
+    background: var(--surface-100);
+    border-top: var(--border-hair) solid var(--line-200);
+  }
+  .footer__inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+  .footer__brand {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .footer__brand img {
+    width: 112px;
+    height: 72px;
+  }
+  .footer__nav ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.8;
+  }
+  .copyright {
+    margin-top: var(--space-4);
+    letter-spacing: 0.06em;
+  }
+  @media (min-width: 768px) {
+    .footer {
+      padding: var(--space-7) 0 var(--space-6);
+    }
+    .footer__inner {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .footer__brand img {
+      width: 124px;
+      height: 80px;
+    }
+    .footer__nav {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 14px;
+    }
+    .footer__nav ul {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 22px;
+    }
+    .copyright {
+      margin-top: 0;
+    }
+  }
+</style>

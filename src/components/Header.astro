@@ -1,0 +1,197 @@
+---
+import { clinic, nav, navEn, isCurrent, type Locale } from '@/lib/site';
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = 'ja' } = Astro.props;
+const items = locale === 'ja' ? nav : navEn;
+const path = Astro.url.pathname;
+const home = locale === 'ja' ? '/' : '/en';
+---
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="logo" href={home} aria-label={`${clinic.name} ${clinic.nameEn}`}>
+      <img src="/logo/mark.svg" alt="" aria-hidden="true" width="51" height="40" />
+      <img src="/logo/wordmark.svg" alt={`${clinic.name} ${clinic.nameEn}`} width="144" height="40" />
+    </a>
+
+    <nav class="nav" aria-label={locale === 'ja' ? 'グローバルナビゲーション' : 'Main navigation'}>
+      <ul>
+        {items.map((item) => (
+          <li>
+            <a href={item.href} aria-current={isCurrent(path, item.href) ? 'page' : undefined}>{item.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="actions">
+      <a class="lang" href={locale === 'ja' ? '/en' : '/'} lang={locale === 'ja' ? 'en' : 'ja'}>
+        {locale === 'ja' ? 'EN' : '日本語'}
+      </a>
+      <a class="btn btn--tel" href={clinic.telHref}>{clinic.tel}</a>
+      <a class="btn btn--line" href={clinic.links.line} target="_blank" rel="noopener">
+        {locale === 'ja' ? 'LINEで順番をとる' : 'Check in via LINE'}
+      </a>
+      <button class="menu-btn" type="button" aria-label={locale === 'ja' ? 'メニュー' : 'Menu'} aria-expanded="false" aria-controls="mobile-nav">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobile-nav" class="mobile-nav" hidden aria-label={locale === 'ja' ? 'メニュー' : 'Menu'}>
+    <ul>
+      {items.map((item) => (
+        <li><a href={item.href}>{item.label}</a></li>
+      ))}
+      {locale === 'ja' && (
+        <>
+          <li><a href="/news">お知らせ</a></li>
+          <li><a href="/disclosure">掲示事項</a></li>
+        </>
+      )}
+    </ul>
+    <div class="mobile-nav__actions">
+      <a class="btn btn--block" href={clinic.telHref}>{clinic.tel}</a>
+      <a class="btn btn--line btn--block" href={clinic.links.line} target="_blank" rel="noopener">
+        {locale === 'ja' ? 'LINEで順番をとる' : 'Check in via LINE'}
+      </a>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.menu-btn');
+  const panel = document.getElementById('mobile-nav');
+  btn?.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    if (panel) panel.hidden = open;
+  });
+</script>
+
+<style>
+  .header {
+    background: var(--surface-000);
+    border-bottom: var(--border-hair) solid var(--line-200);
+  }
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: 68px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .logo img:first-child {
+    width: 41px;
+    height: 32px;
+  }
+  .logo img:last-child {
+    width: 115px;
+    height: 32px;
+  }
+  .nav {
+    display: none;
+  }
+  .nav ul {
+    display: flex;
+    gap: 28px;
+  }
+  .nav a {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--ink-700);
+    padding-bottom: 4px;
+    border-bottom: 2px solid transparent;
+  }
+  .nav a[aria-current='page'] {
+    color: var(--navy-700);
+    border-bottom-color: var(--navy-700);
+  }
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lang {
+    display: none;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--ink-500);
+    margin-right: 4px;
+  }
+  .btn--tel,
+  .btn--line {
+    display: none;
+    min-height: 42px;
+    padding: 0 18px;
+  }
+  .menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1.5px solid var(--navy-700);
+    border-radius: var(--radius-sm);
+    background: var(--surface-white);
+    color: var(--navy-700);
+    cursor: pointer;
+  }
+  .mobile-nav {
+    border-top: var(--border-hair) solid var(--line-200);
+    background: var(--surface-card);
+  }
+  .mobile-nav ul {
+    padding: var(--space-2) var(--space-4);
+  }
+  .mobile-nav li a {
+    display: block;
+    padding: 14px 0;
+    font-weight: 500;
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .mobile-nav__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: var(--space-4);
+  }
+
+  @media (min-width: 1024px) {
+    .header__inner {
+      min-height: 80px;
+    }
+    .logo img:first-child {
+      width: 51px;
+      height: 40px;
+    }
+    .logo img:last-child {
+      width: 144px;
+      height: 40px;
+    }
+    .nav,
+    .lang,
+    .btn--tel,
+    .btn--line {
+      display: inline-flex;
+    }
+    .nav {
+      display: block;
+    }
+    .menu-btn,
+    .mobile-nav {
+      display: none;
+    }
+  }
+</style>

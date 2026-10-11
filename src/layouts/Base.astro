@@ -1,0 +1,101 @@
+---
+/**
+ * 全ページ共通の土台。head(OGP・構造化データ・フォント)、ヘッダー、フッター、モバイル固定CTA。
+ */
+import '@/styles/tokens.css';
+import '@/styles/base.css';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import MobileBar from '@/components/MobileBar.astro';
+import { clinic, clinicJsonLd, type Locale } from '@/lib/site';
+
+interface Props {
+  title: string;
+  description: string;
+  locale?: Locale;
+  /** OGP画像のパス (public/ 配下)。省略時は既定画像 */
+  ogImage?: string;
+  /** トップページなど title に医院名を繰り返さない場合 true */
+  bareTitle?: boolean;
+  /** 対訳ページがある場合の相互リンク */
+  alternate?: { ja?: string; en?: string };
+}
+
+const { title, description, locale = 'ja', ogImage = '/og-default.jpg', bareTitle = false, alternate } = Astro.props;
+const fullTitle = bareTitle ? title : `${title} | ${clinic.name}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogUrl = new URL(ogImage, Astro.site);
+const cfToken = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {alternate?.ja && <link rel="alternate" hreflang="ja" href={new URL(alternate.ja, Astro.site)} />}
+    {alternate?.en && <link rel="alternate" hreflang="en" href={new URL(alternate.en, Astro.site)} />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#f5f1e9" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={clinic.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogUrl} />
+    <meta property="og:locale" content={locale === 'ja' ? 'ja_JP' : 'en_US'} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+    />
+
+    <script type="application/ld+json" set:html={JSON.stringify(clinicJsonLd())} />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">本文へ移動</a>
+    <Header locale={locale} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer locale={locale} />
+    <MobileBar locale={locale} />
+    {cfToken && (
+      <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={`{"token": "${cfToken}"}`} />
+    )}
+  </body>
+</html>
+
+<style>
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 8px;
+    z-index: 100;
+    padding: 8px 12px;
+    background: var(--navy-700);
+    color: var(--surface-000);
+    border-radius: var(--radius-sm);
+  }
+  .skip-link:focus {
+    left: 8px;
+  }
+  main {
+    /* モバイル固定バーの高さ分 */
+    padding-bottom: 76px;
+  }
+  @media (min-width: 768px) {
+    main {
+      padding-bottom: 0;
+    }
+  }
+</style>

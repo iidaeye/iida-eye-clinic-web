@@ -1,0 +1,350 @@
+---
+import Base from '@/layouts/Base.astro';
+import ClinicStatus from '@/components/ClinicStatus.astro';
+import Hours from '@/components/Hours.astro';
+import Calendar from '@/components/Calendar.astro';
+import NewsList from '@/components/NewsList.astro';
+import SurgeryCards from '@/components/SurgeryCards.astro';
+import { clinic } from '@/lib/site';
+import { getNews, getColumns } from '@/lib/content';
+import { formatDate } from '@/lib/site';
+
+const news = await getNews({ limit: 4 });
+const columns = await getColumns({ limit: 1 });
+---
+
+<Base
+  title={`${clinic.name} | 静岡市葵区城北の眼科・日帰り手術`}
+  description="静岡市葵区城北のイイダ眼科医院。3名の眼科専門医による診療と、白内障・緑内障・硝子体・涙道の日帰り手術。公式LINEで当日の順番取りができます。"
+  bareTitle
+  alternate={{ ja: '/', en: '/en' }}
+>
+  <!-- ヒーロー + 診療状況 -->
+  <section class="hero">
+    <div class="hero__main">
+      <img class="hero__image" src="/images/exterior.jpg" alt="イイダ眼科医院 外観" width="1600" height="1000" loading="eager" fetchpriority="high" />
+      <div class="container hero__copy">
+        <p class="eyebrow">静岡市葵区城北 ・ {clinic.founded}年開院</p>
+        <h1 class="hero__tagline">見えるを守り、<br />暮らすを支える。</h1>
+        <p class="hero__lead">3名の眼科専門医による診療と日帰り手術で、毎日の「見える」をお守りします。お子さまの目の健康からご高齢の方の手術まで、地域のかかりつけ眼科として。</p>
+      </div>
+    </div>
+    <div class="hero__side">
+      <div class="container hero__side-inner">
+        <ClinicStatus />
+        <Hours />
+      </div>
+    </div>
+  </section>
+
+  <!-- お知らせ + 休診カレンダー + 受診案内 -->
+  <section class="container section grid-2 grid-2--wide-left">
+    <div class="block">
+      <div class="block__head">
+        <h2 class="heading">お知らせ<span class="sub">NEWS</span></h2>
+        <a class="more" href="/news">一覧へ →</a>
+      </div>
+      <NewsList items={news} />
+    </div>
+    <div class="block">
+      <Calendar />
+      <h2 class="heading-sm" style="margin-top: var(--space-4)">受診をご検討の方へ</h2>
+      <ul class="link-cards">
+        <li><a class="card" href="/visit">受診の流れ・受付方法<span>→</span></a></li>
+        <li><a class="card" href="/medical/contact-lens">コンタクトレンズ処方<span>→</span></a></li>
+        <li><a class="card" href="/medical/glasses">メガネ処方<span>→</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 手術のご案内 -->
+  <section class="surgery">
+    <div class="container surgery__inner">
+      <div class="surgery__head">
+        <div>
+          <h2 class="heading surgery__heading">手術のご案内<span class="sub">SURGERY</span></h2>
+          <p class="surgery__lead">毎週水曜日を手術日とし、日帰りで対応しています。術前の説明から術後の通院まで、同じ医師が責任をもって診ます。</p>
+        </div>
+        <a class="btn btn--ghost" href="/surgery">手術のご案内 詳細へ</a>
+      </div>
+      <SurgeryCards />
+    </div>
+  </section>
+
+  <!-- 医師紹介 + 院内紹介 -->
+  <section class="container section grid-2">
+    <div class="block">
+      <h2 class="heading">医師紹介<span class="sub">DOCTORS</span></h2>
+      <ul class="rule-list doctors">
+        {clinic.doctors.map((d) => (
+          <li class="doctor">
+            <img class="doctor__photo" src="/images/doctor-placeholder.svg" alt="" width="124" height="90" loading="lazy" />
+            <div>
+              <p class="title">{d.role} {d.name}</p>
+              <p class="caption">{d.title}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <a class="btn" href="/clinic/doctors">医師紹介・外来担当表へ</a>
+    </div>
+    <div class="block">
+      <h2 class="heading">新しい医院のご紹介<span class="sub">CLINIC</span></h2>
+      <div class="photo-grid">
+        <img src="/images/placeholder-interior.svg" alt="待合" width="400" height="300" loading="lazy" />
+        <img src="/images/placeholder-interior.svg" alt="検査室" width="400" height="300" loading="lazy" />
+      </div>
+      <p>2026年7月、隣接地に新築移転しました。レンガと木のぬくもりを感じる院内で、検査から診察・手術までを一貫して行います。</p>
+      <a class="btn" href="/clinic/facilities">院内・設備紹介へ</a>
+    </div>
+  </section>
+
+  <!-- コラム + Instagram -->
+  <section class="band">
+  <div class="container section grid-2">
+    <div class="block">
+      <div class="block__head">
+        <h2 class="heading">コラム<span class="sub">COLUMN</span></h2>
+        <a class="more" href="/column">一覧へ →</a>
+      </div>
+      {columns.length > 0 ? (
+        <a class="card" href={`/column/${columns[0].id}`}>
+          <span class="caption">{formatDate(columns[0].data.date)}</span>
+          <span class="title">{columns[0].data.title}</span>
+          <span class="caption">{columns[0].data.description}</span>
+        </a>
+      ) : (
+        <p class="muted">準備中です。</p>
+      )}
+      <p class="caption">医師が執筆する目の健康情報です。</p>
+    </div>
+    <div class="block">
+      <div class="block__head">
+        <h2 class="heading">Instagram</h2>
+        <a class="more" href={clinic.links.instagram} target="_blank" rel="noopener">@iida_eye_clinic</a>
+      </div>
+      <p>工事の進捗や院内の日常など、医院の「今」はInstagramで発信しています。</p>
+      <a class="btn" href={clinic.links.instagram} target="_blank" rel="noopener">Instagramを見る</a>
+    </div>
+  </div>
+  </section>
+
+  <!-- アクセス -->
+  <section class="container section grid-2 grid-2--wide-left">
+    <div class="block">
+      <h2 class="heading">アクセス<span class="sub">ACCESS</span></h2>
+      <iframe class="map" src={clinic.mapEmbed} width="600" height="240" style="border:0" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="イイダ眼科医院の地図"></iframe>
+    </div>
+    <div class="block block--center">
+      <p>〒{clinic.address.postal} {clinic.address.full}<br />TEL <a href={clinic.telHref}>{clinic.tel}</a><br />{clinic.parking}</p>
+      <a class="btn" href="/access">アクセス・駐車場 詳細へ</a>
+      <a class="btn" href="/recruit">スタッフ募集</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ヒーロー */
+  .hero {
+    display: grid;
+  }
+  .hero__image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    object-position: 35% 55%;
+  }
+  .hero__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-block: var(--space-6) var(--space-5);
+  }
+  .hero__tagline {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    line-height: 1.6;
+    color: var(--ink-900);
+  }
+  .hero__lead {
+    font-size: 14px;
+    max-width: 540px;
+  }
+  .hero__side {
+    background: var(--surface-100);
+    border-top: var(--border-hair) solid var(--line-200);
+  }
+  .hero__side-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding-block: var(--space-5);
+  }
+
+  /* 汎用ブロック */
+  .grid-2 {
+    display: grid;
+    gap: var(--space-6);
+  }
+  .block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .block--center {
+    justify-content: center;
+  }
+  .block__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .more {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--navy-700);
+    white-space: nowrap;
+  }
+  .link-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .link-cards .card {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 56px;
+    padding: 14px 18px;
+    font-size: 14.5px;
+    font-weight: 700;
+  }
+  .link-cards .card span {
+    color: var(--navy-700);
+  }
+  .band {
+    background: var(--surface-100);
+  }
+
+  /* 手術 */
+  .surgery {
+    background: var(--navy-700);
+    color: var(--surface-000);
+  }
+  .surgery__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-block: var(--space-7);
+  }
+  .surgery__head {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .surgery__heading {
+    color: var(--surface-000);
+  }
+  .surgery__heading .sub {
+    color: var(--navy-200);
+  }
+  .surgery__lead {
+    margin-top: 8px;
+    font-size: 13.5px;
+    line-height: 1.9;
+    color: var(--navy-100);
+  }
+
+  /* 医師・院内 */
+  .doctor {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+  .doctor__photo {
+    width: 96px;
+    height: 70px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    background: var(--surface-100);
+  }
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .photo-grid img {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    background: var(--surface-100);
+  }
+  .map {
+    width: 100%;
+    height: 200px;
+    border-radius: var(--radius-md);
+  }
+
+  @media (min-width: 768px) {
+    .hero__tagline {
+      font-size: 36px;
+    }
+    .hero__lead {
+      font-size: 15px;
+    }
+    .grid-2 {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-7);
+    }
+    .grid-2--wide-left {
+      grid-template-columns: 1.3fr 1fr;
+    }
+    .surgery__head {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .surgery__inner {
+      gap: 28px;
+      padding-block: var(--space-8);
+    }
+    .doctor__photo {
+      width: 124px;
+      height: 90px;
+    }
+    .photo-grid img {
+      height: 150px;
+    }
+    .map {
+      height: 260px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .hero {
+      grid-template-columns: 7fr 5fr;
+    }
+    .hero__image {
+      height: 520px;
+    }
+    .hero__copy {
+      padding: 48px 0 52px 64px;
+      gap: 18px;
+    }
+    .hero__tagline {
+      font-size: 44px;
+      line-height: 1.55;
+    }
+    .hero__side {
+      border-top: 0;
+      border-left: var(--border-hair) solid var(--line-200);
+    }
+    .hero__side-inner {
+      padding: 40px 44px;
+      gap: var(--space-5);
+    }
+  }
+</style>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://iida-eye-clinic.jp/sitemap-index.xml

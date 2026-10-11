@@ -1,0 +1,25 @@
+# build
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# generated from design/tokens.json (再生成されるため追跡しない)
+src/styles/tokens.css
+
+# env
+.env
+.env.*
+!.env.example
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# logs
+*.log
+pnpm-debug.log*

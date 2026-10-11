@@ -1,0 +1,49 @@
+---
+import Page from '@/layouts/Page.astro';
+import { getColumns } from '@/lib/content';
+import { formatDate } from '@/lib/site';
+
+const items = await getColumns();
+---
+
+<Page
+  title="コラム"
+  description="イイダ眼科医院の医師が執筆する目の健康情報。白内障・緑内障・こどもの近視など。"
+  eyebrow="COLUMN"
+  lead="医師が執筆する、目の病気と治療についての読みもの。受診の前に、また診察で聞きそびれたことの確認にお役立てください。"
+  crumbs={[{ label: 'コラム' }]}
+  cta={false}
+>
+  {items.length === 0 ? (
+    <p class="muted">準備中です。</p>
+  ) : (
+    <ul class="list">
+      {items.map((c) => (
+        <li>
+          <a class="card" href={`/column/${c.id}`}>
+            <span class="caption">{formatDate(c.data.date)}{c.data.tags.length > 0 && ` ・ ${c.data.tags.join(' / ')}`}</span>
+            <span class="title">{c.data.title}</span>
+            <span class="desc">{c.data.description}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</Page>
+
+<style>
+  .list {
+    display: grid;
+    gap: 12px;
+  }
+  .desc {
+    font-size: 13.5px;
+    line-height: 1.8;
+  }
+  @media (min-width: 768px) {
+    .list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+  }
+</style>
