@@ -2,6 +2,12 @@
 /**
  * 全ページ共通の土台。head(OGP・構造化データ・フォント)、ヘッダー、フッター、モバイル固定CTA。
  */
+// フォントはセルフホスト (@fontsource)。unicode-range で分割されており、使う文字の分だけ読み込まれる。
+// 使用ウェイト: 明朝 600 (理念・見出し・数字) / ゴシック 400・500・700
+import '@fontsource/shippori-mincho/600.css';
+import '@fontsource/noto-sans-jp/400.css';
+import '@fontsource/noto-sans-jp/500.css';
+import '@fontsource/noto-sans-jp/700.css';
 import '@/styles/tokens.css';
 import '@/styles/base.css';
 import Header from '@/components/Header.astro';
@@ -50,13 +56,6 @@ const cfToken = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
     <meta property="og:image" content={ogUrl} />
     <meta property="og:locale" content={locale === 'ja' ? 'ja_JP' : 'en_US'} />
     <meta name="twitter:card" content="summary_large_image" />
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
-    />
 
     <script type="application/ld+json" set:html={JSON.stringify(clinicJsonLd())} />
     <slot name="head" />
