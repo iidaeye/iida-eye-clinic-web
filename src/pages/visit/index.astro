@@ -37,6 +37,13 @@ const states = [
   { name: '完了', text: 'この段階は完了しました。', tone: 'muted' },
 ];
 
+const kioskSteps = [
+  { src: '/images/visit/kiosk-1-scan.jpg', title: 'QRコードをかざす', text: '診察券・LINE診察券・次回予定票のQRコードを読み取り機にかざします。QRコードがない方は「番号で受付する」へ。' },
+  { src: '/images/visit/kiosk-2-number.jpg', title: '診察券番号を入力', text: '番号を入力して「次へ」。' },
+  { src: '/images/visit/kiosk-3-birthday.jpg', title: '生年月日の月日を4桁で', text: '例: 3月5日 → 0305。「確認」で受付へ進みます。' },
+  { src: '/images/visit/kiosk-4-purpose.jpg', title: '受診目的を選ぶ', text: '定期受診・新しい症状・お薬のみ から選びます。「新しい症状」では簡単な問診があります。' },
+];
+
 const callOrder = [
   { n: '1', title: '受付番号順に「まもなく」へ', text: '受付番号の順番で「待機」から「まもなく」の状態に移ります。' },
   { n: '2', title: '「まもなく」になった順番でお呼びします', text: '検査の種類によって経路が異なるため、別の経路から来た方が受付番号順で前に入ることがあり、待ち人数が増減する場合があります。' },
@@ -95,6 +102,18 @@ const callOrder = [
         <p class="small">ご自宅などから順番をお取りいただけます。順番が近づくとLINEでお知らせしますので、そのタイミングでご来院ください。</p>
         <a class="btn btn--line" href={clinic.links.line} target="_blank" rel="noopener">LINEで順番をとる</a>
       </div>
+    </div>
+    <div class="kiosk-guide">
+      <p class="title">セルフ受付機の画面</p>
+      <ol class="screens">
+        {kioskSteps.map((k, i) => (
+          <li class="screen">
+            <img src={k.src} alt={`セルフ受付機の画面: ${k.title}`} width="615" height="900" loading="lazy" />
+            <p class="screen__title"><span class="screen__n">{i + 1}</span>{k.title}</p>
+            <p class="small muted">{k.text}</p>
+          </li>
+        ))}
+      </ol>
     </div>
     <div class="notice">
       <p class="title">ご来院時のお願い</p>
@@ -302,6 +321,52 @@ const callOrder = [
     flex-direction: column;
     gap: 4px;
   }
+  .kiosk-guide {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .screens {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 12px;
+  }
+  .screen {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .screen img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 615 / 900;
+    object-fit: cover;
+    object-position: top;
+    border: var(--border-hair) solid var(--line-200);
+    border-radius: var(--radius-sm);
+    background: var(--surface-card);
+  }
+  .screen__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--ink-900);
+    margin-top: 4px;
+  }
+  .screen__n {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--navy-700);
+    color: var(--surface-000);
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
   .notice {
     padding: 18px 20px;
     border: var(--border-hair) solid var(--line-200);
@@ -471,6 +536,10 @@ const callOrder = [
     }
     .cards-2 {
       grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .screens {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 16px;
     }
     .flow {
