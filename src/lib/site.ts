@@ -42,8 +42,10 @@ export function formatDate(d: Date, locale: Locale = 'ja'): string {
 
 /** パスがナビ項目の配下かどうか (現在地ハイライト用) */
 export function isCurrent(pathname: string, href: string): boolean {
-  if (href === '/') return pathname === '/';
-  return pathname === href || pathname.startsWith(href + '/');
+  // build.format: 'file' ではビルド時の pathname が /news.html になるため拡張子を外して比較する
+  const p = pathname.replace(/index\.html$/, '').replace(/\.html$/, '') || '/';
+  if (href === '/') return p === '/';
+  return p === href || p.startsWith(href + '/');
 }
 
 /** schema.org MedicalClinic の構造化データ */

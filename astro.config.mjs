@@ -7,8 +7,16 @@ import sitemap from '@astrojs/sitemap';
  * - 完全静的生成 (Cloudflare Workers 静的アセットでホスティング)
  * - 日本語をデフォルト、英語は /en/ 配下の主要4ページのみ
  */
+/**
+ * サイトの絶対URL。canonical / OGP画像 / sitemap / 構造化データに使う。
+ * 本番ドメイン切替前は仮URL (workers.dev) で配信するため、Cloudflare の Build variables に
+ * SITE_URL=https://iida-eye-clinic-web.<account>.workers.dev を設定する。
+ * 未設定 (本番) では iida-eye-clinic.jp になる。
+ */
+const site = (process.env.SITE_URL || 'https://iida-eye-clinic.jp').replace(/\/+$/, '');
+
 export default defineConfig({
-  site: 'https://iida-eye-clinic.jp',
+  site,
   trailingSlash: 'never',
   build: {
     format: 'file',

@@ -58,7 +58,7 @@ Cloudflare は Pages を Workers に統合しているため、Workers の静的
 
 1. Cloudflare ダッシュボード → Workers & Pages → Create → Import a repository → このリポジトリ
 2. Build command `pnpm run build`、Deploy command `npx wrangler deploy` (既定のまま)
-3. Advanced settings → Build variables に `PUBLIC_STATUS_API_URL`、`PUBLIC_CALENDAR_API_URL`、`PUBLIC_CF_ANALYTICS_TOKEN` (任意)。Node は `.node-version` (22) が使われる
+3. Advanced settings → Build variables に `SITE_URL` (仮URLで公開している間は `https://iida-eye-clinic-web.<account>.workers.dev`。本番ドメイン切替時に削除)、`PUBLIC_STATUS_API_URL`、`PUBLIC_CALENDAR_API_URL`、`PUBLIC_CF_ANALYTICS_TOKEN` (任意)。Node は `.node-version` (22) が使われる
 4. まず `iida-eye-clinic-web.<account>.workers.dev` の仮URLで確認。DNS の引き継ぎ完了後に Custom domain で `iida-eye-clinic.jp` を追加
 
 main 以外のブランチへの push はプレビューURLが発行される (Enable Preview builds)。手元から `pnpm exec wrangler deploy --dry-run` で設定を検証できる。

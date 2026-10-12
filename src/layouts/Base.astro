@@ -29,7 +29,9 @@ interface Props {
 
 const { title, description, locale = 'ja', ogImage = '/og-default.jpg', bareTitle = false, alternate } = Astro.props;
 const fullTitle = bareTitle ? title : `${title} | ${clinic.name}`;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+// build.format: 'file' だと pathname が /news.html になるので、配信URL (/news, トップは /) に揃える
+const cleanPath = Astro.url.pathname.replace(/index\.html$/, '').replace(/\.html$/, '') || '/';
+const canonical = new URL(cleanPath, Astro.site);
 const ogUrl = new URL(ogImage, Astro.site);
 const cfToken = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
 ---
@@ -54,6 +56,9 @@ const cfToken = import.meta.env.PUBLIC_CF_ANALYTICS_TOKEN;
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${clinic.name} 外観`} />
     <meta property="og:locale" content={locale === 'ja' ? 'ja_JP' : 'en_US'} />
     <meta name="twitter:card" content="summary_large_image" />
 
