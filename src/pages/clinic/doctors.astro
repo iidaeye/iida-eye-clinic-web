@@ -1,0 +1,249 @@
+---
+/**
+ * 医師紹介・外来担当表 (/clinic/doctors)
+ * 医師データは clinic.json の doctors。写真は全員「診療風景」カット (正面の証明写真は使わない)。
+ * 外来担当表は画像ではなく HTML 表。[要確認] の担当は確定後に差し替える。
+ */
+import Page from '@/layouts/Page.astro';
+import { clinic } from '@/lib/site';
+
+const toc = [
+  { href: '#doctors', label: '医師紹介' },
+  { href: '#schedule', label: '外来担当表' },
+];
+
+// 外来担当表。値は医師の slug の配列。確定するまで [要確認] のまま
+const days = ['月', '火', '水', '木', '金', '土'];
+type Slot = string[] | 'surgery' | 'closed' | 'tbd';
+const schedule: { label: string; cells: Slot[] }[] = [
+  { label: '午前', cells: ['tbd', 'tbd', 'surgery', 'tbd', 'tbd', 'tbd'] },
+  { label: '午後', cells: ['tbd', 'tbd', 'surgery', 'closed', 'tbd', 'closed'] },
+];
+const byId = Object.fromEntries(clinic.doctors.map((d) => [d.slug, d]));
+const cellText = (c: Slot) => {
+  if (c === 'surgery') return { text: '手術・予約検査', cls: 'surgery' };
+  if (c === 'closed') return { text: '休診', cls: 'closed' };
+  if (c === 'tbd') return { text: '[要確認]', cls: 'tbd' };
+  return { text: c.map((s) => byId[s]?.name.replace(' ', '')).join(' / '), cls: 'open' };
+};
+---
+
+<Page
+  title="医師紹介・外来担当表"
+  description="イイダ眼科医院の医師紹介。飯田文人(院長)・飯田悠人・飯田裕子、3名とも日本眼科学会認定 眼科専門医・医学博士。経歴、資格、手術の担当と外来担当表。"
+  eyebrow="DOCTORS"
+  lead="3名の眼科専門医が外来を担当しています。手術は術式ごとに執刀医を決め、手術前の説明から術後の診察まで執刀医が責任をもって診ます。"
+  crumbs={[{ href: '/clinic', label: '当院について' }, { label: '医師紹介・外来担当表' }]}
+  toc={toc}
+>
+  <section id="doctors">
+    <h2 class="heading">医師紹介<span class="sub">DOCTORS</span></h2>
+    <div class="doctors">
+      {clinic.doctors.map((d) => (
+        <article class="doctor" id={d.slug}>
+          <img class="doctor__photo" src="/images/doctor-placeholder.svg" alt={`${d.name} 診療風景`} width="640" height="440" loading="lazy" />
+          <div class="doctor__body">
+            <p class="eyebrow">{d.role}</p>
+            <h3 class="doctor__name">{d.name}</h3>
+            <p class="doctor__title">{d.title}</p>
+            {d.surgery && <p class="doctor__surgery">{d.surgery}</p>}
+            <div class="doctor__cols">
+              <div>
+                <p class="heading-sm">資格・所属</p>
+                <ul class="rule-list small">
+                  {d.qualifications.map((q) => <li>{q}</li>)}
+                </ul>
+              </div>
+              <div>
+                <p class="heading-sm">経歴</p>
+                <dl class="career">
+                  {d.career.map(([y, t]) => (
+                    <div class="career__row">
+                      <dt>{y}</dt>
+                      <dd>{t}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section id="schedule">
+    <h2 class="heading">外来担当表<span class="sub">SCHEDULE</span></h2>
+    <div class="table-wrap">
+      <table class="schedule">
+        <thead>
+          <tr>
+            <th scope="col"></th>
+            {days.map((d) => <th scope="col">{d}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {schedule.map((row) => (
+            <tr>
+              <th scope="row">{row.label}</th>
+              {row.cells.map((c) => {
+                const m = cellText(c);
+                return <td class={`cell cell--${m.cls}`}>{m.text}</td>;
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">
+      日曜・祝日は休診。水曜日は手術と予約検査の日です。担当医は学会出席などで変更になることがあります。
+      診療時間・受付時間は<a href="/visit#hours">受診案内</a>をご覧ください。
+    </p>
+  </section>
+</Page>
+
+<style>
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    scroll-margin-top: 80px;
+  }
+  .small {
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  .doctors {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+  .doctor {
+    display: grid;
+    gap: var(--space-4);
+    padding-bottom: var(--space-6);
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .doctor:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .doctor__photo {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 11;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    background: var(--surface-100);
+  }
+  .doctor__body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .doctor__name {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--ink-900);
+  }
+  .doctor__title {
+    font-size: 14px;
+    color: var(--ink-500);
+  }
+  .doctor__surgery {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 4px 10px;
+    border: var(--border-hair) solid var(--navy-700);
+    border-radius: var(--radius-sm);
+    color: var(--navy-700);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .doctor__cols {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: 8px;
+  }
+  .doctor__cols .heading-sm {
+    margin-bottom: 6px;
+  }
+  .career {
+    border-top: var(--border-hair) solid var(--line-100);
+  }
+  .career__row {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 12px;
+    padding: 7px 0;
+    border-bottom: var(--border-hair) solid var(--line-100);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .career dt {
+    color: var(--ink-500);
+    font-variant-numeric: tabular-nums;
+  }
+  .career dd {
+    margin: 0;
+  }
+
+  /* 外来担当表 */
+  .table-wrap {
+    overflow-x: auto;
+  }
+  .schedule {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    background: var(--surface-card);
+    border: var(--border-hair) solid var(--line-200);
+    font-size: 13.5px;
+    text-align: center;
+  }
+  .schedule th,
+  .schedule td {
+    padding: 12px 6px;
+    border-bottom: var(--border-hair) solid var(--line-050);
+  }
+  .schedule thead th {
+    background: var(--surface-100);
+    font-weight: 700;
+    border-bottom: var(--border-rule) solid var(--line-strong);
+  }
+  .schedule tbody th {
+    font-weight: 700;
+    width: 64px;
+  }
+  .cell--open {
+    color: var(--ink-900);
+    font-weight: 500;
+  }
+  .cell--surgery {
+    color: var(--ink-500);
+    font-size: 12px;
+  }
+  .cell--closed {
+    color: var(--ink-disabled);
+  }
+  .cell--tbd {
+    color: var(--ink-500);
+  }
+
+  @media (min-width: 768px) {
+    .doctor {
+      grid-template-columns: 320px 1fr;
+      gap: var(--space-6);
+      align-items: start;
+    }
+    .doctor__cols {
+      grid-template-columns: 1fr 1.4fr;
+      gap: var(--space-5);
+    }
+    .schedule {
+      font-size: 14px;
+    }
+  }
+</style>
