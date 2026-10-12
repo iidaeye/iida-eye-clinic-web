@@ -4,14 +4,14 @@
 
 ```
 PUBLIC_STATUS_API_URL=https://line.iida-eye.net/api/...
-PUBLIC_CALENDAR_API_URL=https://line.iida-eye.net/api/...
+PUBLIC_CALENDAR_API_URL=https://line.iida-eye.net/api/public/calendar/
 ```
 
-未設定、または取得に失敗した場合は、診療状況は「公式LINEのミニアプリでご確認ください」、カレンダーは定休ルール (`src/data/clinic.json` の `hours`) だけの表示にフォールバックする。サイト自体は静的なので、API が停止してもページは表示される。
+未設定、または取得に失敗した場合は、診療状況は「公式LINEのミニアプリでご確認ください」、カレンダーは定休ルール (`src/data/clinic.json` の `hours`) だけの表示にフォールバックする (カレンダーは未設定時に本番 URL を既定値として使う)。サイト自体は静的なので、API が停止してもページは表示される。
 
 ## CORS
 
-`iida-eye-clinic.jp` (開発中は `iida-eye-clinic-web.winter-silence-cb11.workers.dev`) から fetch するため、API 側で次のヘッダーが必要:
+カレンダー API は `Access-Control-Allow-Origin: *` を返すので対応不要。診療状況 API は `iida-eye-clinic.jp` (開発中は `iida-eye-clinic-web.winter-silence-cb11.workers.dev`) から fetch するため、API 側で次のヘッダーが必要:
 
 ```
 Access-Control-Allow-Origin: https://iida-eye-clinic.jp
@@ -33,26 +33,29 @@ Access-Control-Allow-Origin: https://iida-eye-clinic.jp
 
 実際の形式が異なる場合は `src/components/ClinicStatus.astro` の `normalize()` でフィールド名を読み替える (`isOpen` / `waitingCount` / `callingNumber` / `updated_at` は読めるようにしてある)。
 
-## 休診カレンダー: 現在の想定レスポンス
+## 休診カレンダー: LIFF 公開カレンダー API (接続済み)
 
-定休 (水・日・祝、木・土午後) は clinic.json のルールで描くので、API は **例外日だけ** 返せばよい。
+LIFF (liff_iec_cliniqueue) の `GET /api/public/calendar/?from=YYYY-MM-DD&to=YYYY-MM-DD` を使う。仕様の正は LIFF リポジトリの `docs/PUBLIC_CALENDAR_API.md`。
 
-```json
-{
-  "2026-10-30": "pm-closed",
-  "2026-10-31": "closed",
-  "2026-11-26": "note",
-  "2026-11-27": "note"
-}
-```
+- 本番 `https://line.iida-eye.net/api/public/calendar/`、開発 `https://line-dev.iida-eye.net/api/public/calendar/`
+- 認証不要、`Access-Control-Allow-Origin: *`、サーバー側 5 分キャッシュ (`Cache-Control: public, max-age=300`)、IP 単位 60 回/分
+- `PUBLIC_CALENDAR_API_URL` 未設定時は本番 URL を既定値として使う (2026-10-13 に接続確認済み)
+- 期間は最大 124 日。`Calendar.astro` は表示中の月だけを `from`=1日, `to`=末日で取得し、月ごとにメモリにキャッシュする
 
-| 値 | 表示 |
+レスポンスの `days[]` を次の規則で表示に変換する (`Calendar.astro` の `classify`)。LINE 受付の休診判定と同じ結果になる。
+
+| 条件 | 表示 |
 | --- | --- |
-| `closed` | 終日休診 (灰色) |
-| `pm-closed` | 午後休診 (下半分灰色) |
-| `note` | お知らせ参照 (緑枠。2診体制など) |
+| `exception_type === 'special'` | 臨時診療 (緑枠) |
+| `is_clinic_day === false` | 休診 (灰色)。祝日もここに含まれる |
+| `am.available && !pm.available` | 午後休診 (下半分灰色) |
+| `!am.available && pm.available` | 午前休診 (上半分灰色) |
 
-祝日は API 側で `closed` として返す (サイト側は祝日判定を持たない)。
+`exception_type` が `closed` / `special` の日は、グリッドの下に日付・種別・理由 (`exception_reason`) を一覧で出す。祝日 (`holiday`) と定休は一覧に載せない。理由は FileMaker の自由入力なので `textContent` で挿入する。
+
+取得失敗時、または `complete: false` (例外日を取得できず曜日の通常予定だけで組まれている) のときは、定休ルール (`clinic.json` の `hours`) で描き、「最新の休診情報を取得できませんでした」の注意文を出す。
+
+休診情報の更新は FileMaker の例外日 (`api_ClinicScheduleException`) に行を追加するだけでよい。LINE 受付・受付機・ホームページに同時に反映される (最大 5 分 + ブラウザキャッシュ分の遅れ)。
 
 ## 更新頻度
 

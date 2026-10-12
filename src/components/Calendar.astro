@@ -1,10 +1,11 @@
 ---
 /**
- * 休診カレンダー。定休ルール (clinic.json) で基本の表示を組み、
- * PUBLIC_CALENDAR_API_URL から臨時休診・午後休診・2診体制などの例外を取得して上書きする。
- * 期待する JSON (docs/status-api.md 参照):
- *   { "2026-10-30": "pm-closed", "2026-10-31": "closed", "2026-11-26": "note" }
- * 値: closed | pm-closed | note (お知らせ参照)
+ * 休診カレンダー。定休ルール (clinic.json) で基本の表示を即座に組み、
+ * LIFF の公開カレンダー API (docs/status-api.md) から月ごとの診療予定を取得して上書きする。
+ * 表示規則は LINE 受付の「休診」判定と同じになる。
+ * API: GET {PUBLIC_CALENDAR_API_URL}?from=YYYY-MM-DD&to=YYYY-MM-DD
+ *   days[]: { date, weekday, is_clinic_day, is_exception, exception_type, exception_reason, am.available, pm.available }
+ * 未設定時は本番 URL を使う。取得失敗・complete=false のときは定休ルールだけで描き、注意文を出す。
  */
 import { clinic, type Locale } from '@/lib/site';
 
@@ -12,7 +13,7 @@ interface Props {
   locale?: Locale;
 }
 const { locale = 'ja' } = Astro.props;
-const api = import.meta.env.PUBLIC_CALENDAR_API_URL ?? '';
+const api = import.meta.env.PUBLIC_CALENDAR_API_URL || 'https://line.iida-eye.net/api/public/calendar/';
 const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
 ---
 
@@ -29,25 +30,54 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
   <ul class="calendar__legend">
     <li><span class="dot dot--closed"></span>{locale === 'ja' ? '休診' : 'Closed'}</li>
     <li><span class="dot dot--pm"></span>{locale === 'ja' ? '午後休診' : 'PM closed'}</li>
-    <li><span class="dot dot--note"></span>{locale === 'ja' ? 'お知らせをご確認ください' : 'See notices'}</li>
+    <li><span class="dot dot--am"></span>{locale === 'ja' ? '午前休診' : 'AM closed'}</li>
+    <li><span class="dot dot--note"></span>{locale === 'ja' ? '臨時診療' : 'Special hours'}</li>
   </ul>
+  <ul class="calendar__exceptions" data-cal-exceptions hidden></ul>
+  <p class="calendar__warn" data-cal-warn hidden>
+    {locale === 'ja'
+      ? '最新の休診情報を取得できませんでした。通常の診療日程を表示しています。臨時休診は公式LINEまたはお電話でご確認ください。'
+      : 'Latest closure information could not be loaded. Regular hours are shown. Please check our LINE account or call us for temporary closures.'}
+  </p>
+  <noscript><p class="calendar__warn">{locale === 'ja' ? '休診日は公式LINE、またはお電話でご確認ください。' : 'Please check our LINE account or call us for closed days.'}</p></noscript>
 </div>
 
 <script>
-  type Kind = 'closed' | 'pm-closed' | 'note';
+  type Kind = 'closed' | 'pm-closed' | 'am-closed' | 'note';
+  type Session = { available: boolean };
+  type ApiDay = {
+    date: string;
+    weekday: string;
+    is_clinic_day: boolean;
+    is_exception: boolean;
+    exception_type: 'holiday' | 'closed' | 'special' | null;
+    exception_reason: string | null;
+    am: Session;
+    pm: Session;
+  };
+  type ApiCalendar = { from: string; to: string; complete: boolean; days: ApiDay[] };
+  type DayInfo = { kind: Kind | null; reason: string | null; type: ApiDay['exception_type'] };
+  type MonthData = { days: Record<string, DayInfo>; complete: boolean };
+
   const root = document.querySelector<HTMLElement>('[data-calendar-api]');
   if (root) {
     const ja = root.dataset.locale !== 'en';
+    const api = root.dataset.calendarApi ?? '';
     const rules = JSON.parse(root.dataset.rules!) as { am: string[]; pm: string[] };
     const grid = root.querySelector<HTMLElement>('[data-cal-grid]')!;
     const title = root.querySelector<HTMLElement>('[data-cal-title]')!;
-    let exceptions: Record<string, Kind> = {};
+    const list = root.querySelector<HTMLElement>('[data-cal-exceptions]')!;
+    const warn = root.querySelector<HTMLElement>('[data-cal-warn]')!;
+    const months = new Map<string, MonthData | 'error'>();
     const today = new Date();
     let y = today.getFullYear();
     let m = today.getMonth();
 
     const dayNames = ja ? ['日', '月', '火', '水', '木', '金', '土'] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
     const ruleIndex = (dow: number) => (dow + 6) % 7; // JS: 0=日 → clinic.json: 0=月
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const key = (yy: number, mm: number, d: number) => `${yy}-${pad(mm + 1)}-${pad(d)}`;
+    const monthKey = (yy: number, mm: number) => `${yy}-${pad(mm + 1)}`;
 
     function baseKind(date: Date): Kind | null {
       const i = ruleIndex(date.getDay());
@@ -55,50 +85,125 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
       const pm = rules.pm[i];
       if (am !== 'open' && pm !== 'open') return 'closed';
       if (am === 'open' && pm !== 'open') return 'pm-closed';
+      if (am !== 'open' && pm === 'open') return 'am-closed';
       return null;
     }
 
-    function render() {
+    function classify(d: ApiDay): Kind | null {
+      if (d.exception_type === 'special') return 'note';
+      if (!d.is_clinic_day) return 'closed';
+      if (d.am.available && !d.pm.available) return 'pm-closed';
+      if (!d.am.available && d.pm.available) return 'am-closed';
+      return null;
+    }
+
+    function kindLabel(kind: Kind | null): string {
+      if (kind === 'closed') return ja ? '休診' : 'Closed';
+      if (kind === 'pm-closed') return ja ? '午後休診' : 'PM closed';
+      if (kind === 'am-closed') return ja ? '午前休診' : 'AM closed';
+      if (kind === 'note') return ja ? '臨時診療' : 'Special hours';
+      return '';
+    }
+
+    async function load(yy: number, mm: number): Promise<MonthData | 'error'> {
+      const k = monthKey(yy, mm);
+      const cached = months.get(k);
+      if (cached) return cached;
+      if (!api) return 'error';
+      try {
+        const from = key(yy, mm, 1);
+        const to = key(yy, mm, new Date(yy, mm + 1, 0).getDate());
+        const sep = api.includes('?') ? '&' : '?';
+        const res = await fetch(`${api}${sep}from=${from}&to=${to}`);
+        if (!res.ok) throw new Error(String(res.status));
+        const data = (await res.json()) as ApiCalendar;
+        const days: Record<string, DayInfo> = {};
+        for (const d of data.days ?? []) {
+          days[d.date] = { kind: classify(d), reason: d.exception_reason, type: d.exception_type };
+        }
+        const result: MonthData = { days, complete: data.complete !== false };
+        months.set(k, result);
+        return result;
+      } catch {
+        months.set(k, 'error');
+        return 'error';
+      }
+    }
+
+    function render(data: MonthData | 'error' | null) {
       title.textContent = ja ? `${y}年${m + 1}月` : new Date(y, m, 1).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
       const first = new Date(y, m, 1);
       const last = new Date(y, m + 1, 0);
+      const api = data && data !== 'error' ? data : null;
       const cells: string[] = dayNames.map((d) => `<div class="calendar__dow" role="columnheader">${d}</div>`);
       for (let i = 0; i < first.getDay(); i++) cells.push('<div class="calendar__empty"></div>');
       for (let d = 1; d <= last.getDate(); d++) {
         const date = new Date(y, m, d);
-        const key = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-        const kind = exceptions[key] ?? baseKind(date);
+        const k = key(y, m, d);
+        const info = api?.days[k];
+        const kind = info ? info.kind : baseKind(date);
         const isToday = date.toDateString() === today.toDateString();
+        const label = kindLabel(kind);
         cells.push(
-          `<div class="calendar__day${kind ? ` is-${kind}` : ''}${isToday ? ' is-today' : ''}" role="gridcell"><span>${d}</span></div>`,
+          `<div class="calendar__day${kind ? ` is-${kind}` : ''}${isToday ? ' is-today' : ''}" role="gridcell"${label ? ` aria-label="${d}${ja ? '日 ' : ' '}${label}"` : ''}><span>${d}</span></div>`,
         );
       }
       grid.innerHTML = cells.join('');
+
+      // 臨時休診・臨時診療の一覧 (祝日と定休は載せない)。理由は FileMaker の自由入力なので textContent で入れる
+      list.innerHTML = '';
+      const items = api
+        ? Object.entries(api.days).filter(([, v]) => v.type === 'closed' || v.type === 'special')
+        : [];
+      for (const [k, v] of items) {
+        const date = new Date(`${k}T00:00:00`);
+        const li = document.createElement('li');
+        const when = document.createElement('span');
+        when.className = 'calendar__ex-date';
+        when.textContent = ja
+          ? `${date.getMonth() + 1}月${date.getDate()}日(${dayNames[date.getDay()]})`
+          : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+        const what = document.createElement('span');
+        what.className = 'calendar__ex-kind';
+        what.textContent = kindLabel(v.kind);
+        li.append(when, what);
+        if (v.reason) {
+          const why = document.createElement('span');
+          why.className = 'calendar__ex-reason';
+          why.textContent = v.reason;
+          li.append(why);
+        }
+        list.appendChild(li);
+      }
+      list.hidden = items.length === 0;
+      warn.hidden = !!api && api.complete;
+    }
+
+    async function show() {
+      const k = monthKey(y, m);
+      render(months.get(k) ?? null);
+      const data = await load(y, m);
+      // 取得中に月を移動していたら、古い月の結果で上書きしない
+      if (monthKey(y, m) === k) render(data);
     }
 
     root.querySelector('[data-cal-prev]')?.addEventListener('click', () => {
       m--;
       if (m < 0) { m = 11; y--; }
-      render();
+      show();
     });
     root.querySelector('[data-cal-next]')?.addEventListener('click', () => {
       m++;
       if (m > 11) { m = 0; y++; }
-      render();
+      show();
     });
 
-    render();
-    const api = root.dataset.calendarApi;
-    if (api) {
-      fetch(api, { cache: 'no-store' })
-        .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-        .then((data) => { exceptions = data ?? {}; render(); })
-        .catch(() => { /* 取得失敗時は定休ルールのみ表示 */ });
-    }
+    show();
   }
 </script>
 
 <style>
+  /* グリッドのセルと臨時休診の一覧は JS で生成するため、スコープ付き CSS が当たらない。:global() で指定する */
   .calendar {
     display: flex;
     flex-direction: column;
@@ -139,14 +244,14 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     border: var(--border-hair) solid var(--line-200);
     border-radius: var(--radius-md);
   }
-  .calendar__dow {
+  .calendar__grid :global(.calendar__dow) {
     padding: 4px 0;
     text-align: center;
     font-size: 11.5px;
     font-weight: 700;
     color: var(--ink-500);
   }
-  .calendar__day {
+  .calendar__grid :global(.calendar__day) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -155,17 +260,20 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     font-size: 14px;
     font-weight: 500;
   }
-  .calendar__day.is-closed {
+  .calendar__grid :global(.calendar__day.is-closed) {
     background: var(--line-050);
     color: var(--ink-disabled);
   }
-  .calendar__day.is-pm-closed {
+  .calendar__grid :global(.calendar__day.is-pm-closed) {
     background: linear-gradient(to bottom, transparent 50%, var(--line-050) 50%);
   }
-  .calendar__day.is-note {
+  .calendar__grid :global(.calendar__day.is-am-closed) {
+    background: linear-gradient(to bottom, var(--line-050) 50%, transparent 50%);
+  }
+  .calendar__grid :global(.calendar__day.is-note) {
     box-shadow: inset 0 0 0 2px var(--brand-green);
   }
-  .calendar__day.is-today span {
+  .calendar__grid :global(.calendar__day.is-today span) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -200,7 +308,46 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     background: linear-gradient(to bottom, var(--surface-card) 50%, var(--line-050) 50%);
     border: 1px solid var(--line-100);
   }
+  .dot--am {
+    background: linear-gradient(to bottom, var(--line-050) 50%, var(--surface-card) 50%);
+    border: 1px solid var(--line-100);
+  }
   .dot--note {
     box-shadow: inset 0 0 0 2px var(--brand-green);
+  }
+
+  /* 臨時休診の一覧 */
+  .calendar__exceptions {
+    display: flex;
+    flex-direction: column;
+    border-top: var(--border-hair) solid var(--line-100);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .calendar__exceptions :global(li) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    padding: 8px 0;
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .calendar__exceptions :global(.calendar__ex-date) {
+    font-weight: 700;
+    color: var(--ink-900);
+    white-space: nowrap;
+  }
+  .calendar__exceptions :global(.calendar__ex-kind) {
+    font-weight: 700;
+    color: var(--alert-700);
+    white-space: nowrap;
+  }
+  .calendar__exceptions :global(.calendar__ex-reason) {
+    flex-basis: 100%;
+    color: var(--ink-500);
+  }
+  .calendar__warn {
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--alert-700);
   }
 </style>
