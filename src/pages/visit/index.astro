@@ -29,12 +29,12 @@ const flow = [
 ];
 
 const states = [
-  { name: '待機', text: '順番待ちの状態です。院外でお過ごしいただけます。', tone: 'muted' },
-  { name: 'まもなく', text: 'まもなくお呼びします。院内にお戻りください。', tone: 'accent' },
-  { name: '呼び出し中', text: 'お呼びしています。', tone: 'accent' },
-  { name: '呼び出し済み', text: 'お呼びしましたがご不在でした。セルフ受付機で再度チェックインしてください。', tone: 'warn' },
-  { name: '対応中', text: '現在対応中です。', tone: 'muted' },
-  { name: '完了', text: 'この段階は完了しました。', tone: 'muted' },
+  { name: '待機', text: '順番待ちの状態です。院外でお過ごしいただけます。', tone: 'wait' },
+  { name: 'まもなく', text: 'まもなくお呼びします。院内にお戻りください。', tone: 'soon' },
+  { name: '呼び出し中', text: 'お呼びしています。', tone: 'calling' },
+  { name: '呼び出し済み', text: 'お呼びしましたがご不在でした。セルフ受付機で再度チェックインしてください。', tone: 'called' },
+  { name: '対応中', text: '現在対応中です。', tone: 'active' },
+  { name: '完了', text: 'この段階は完了しました。', tone: 'done' },
 ];
 
 const kioskSteps = [
@@ -533,8 +533,10 @@ const callOrder = [
     gap: 12px;
     align-items: start;
   }
+  /* バッジの色は LINE ミニアプリの状態表示と同じ (design/tokens.json の status-*) */
   .state__badge {
     display: inline-block;
+    min-width: 70px;
     padding: 3px 10px;
     border-radius: var(--radius-sm);
     border: var(--border-hair) solid var(--line-200);
@@ -542,17 +544,38 @@ const callOrder = [
     color: var(--ink-700);
     font-size: 12.5px;
     font-weight: 700;
+    text-align: center;
     white-space: nowrap;
   }
-  .state__badge--accent {
-    border-color: var(--navy-700);
-    background: var(--navy-700);
-    color: var(--surface-000);
+  .state__badge--wait {
+    background: var(--status-wait-bg);
+    color: var(--status-wait-ink);
+    border-color: var(--status-wait-line);
   }
-  .state__badge--warn {
-    border-color: var(--brand-green);
-    color: var(--brand-green);
-    background: var(--surface-card);
+  .state__badge--soon {
+    background: var(--status-soon-bg);
+    color: var(--status-soon-ink);
+    border-color: var(--status-soon-line);
+  }
+  .state__badge--calling {
+    background: var(--status-calling-bg);
+    color: var(--status-calling-ink);
+    border-color: var(--status-calling-line);
+  }
+  .state__badge--called {
+    background: var(--status-called-bg);
+    color: var(--status-called-ink);
+    border-color: var(--status-called-line);
+  }
+  .state__badge--active {
+    background: var(--status-active-bg);
+    color: var(--status-active-ink);
+    border-color: var(--status-active-line);
+  }
+  .state__badge--done {
+    background: var(--status-done-bg);
+    color: var(--status-done-ink);
+    border-color: var(--status-done-line);
   }
   .order {
     display: flex;
