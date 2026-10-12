@@ -234,7 +234,13 @@ const callOrder = [
     <dl class="rule-list defs">
       <div class="def">
         <dt class="title">眼鏡・コンタクトレンズの処方</dt>
-        <dd class="small">検査や装用練習に時間がかかります。{clinic.visit.glassesDeadline}</dd>
+        <dd class="small">
+          <p>検査や装用練習に時間がかかります。{clinic.visit.glasses.deadline}</p>
+          <ul class="dots">
+            {clinic.visit.glasses.glasses.map((t) => <li>{t}</li>)}
+            {clinic.visit.glasses.contacts.map((t) => <li>{t}</li>)}
+          </ul>
+        </dd>
       </div>
       <div class="def">
         <dt class="title">散瞳検査(眼底検査)</dt>
@@ -328,8 +334,16 @@ const callOrder = [
     margin-top: 6px;
   }
   .kiosk,
-  .notice ul {
+  .notice ul,
+  .dots {
     list-style: disc;
+  }
+  .dots {
+    margin-top: 6px;
+    padding-left: 1.2em;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
   .kiosk {
     margin-top: 4px;
