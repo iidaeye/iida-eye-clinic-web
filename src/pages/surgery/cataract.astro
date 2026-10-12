@@ -1,0 +1,386 @@
+---
+/**
+ * 白内障手術 (/surgery/cataract)
+ * デザインキャンバス「下層ページ」の Cataract を移植。
+ * 多焦点眼内レンズは選定療養の制度と費用の説明に徹し、利点だけでなく限界も書く (医療広告ガイドライン)。
+ * 料金表は src/data/iol-fees.json (院内掲示と一致させる)。
+ */
+import Page from '@/layouts/Page.astro';
+import { clinic } from '@/lib/site';
+import iolFees from '@/data/iol-fees.json';
+
+const surgeon = clinic.doctors.find((d) => d.slug === 'yuto')!;
+const yen = (n: number) => n.toLocaleString('ja-JP') + '円';
+
+const toc = [
+  { href: '#about', label: '白内障とは' },
+  { href: '#surgery', label: '手術について' },
+  { href: '#lens', label: '眼内レンズの選び方' },
+  { href: '#sentei', label: '多焦点眼内レンズと選定療養' },
+  { href: '#aftercare', label: '術後の経過と注意' },
+  { href: '#faq', label: 'よくあるご質問' },
+];
+
+const surgeryFacts = [
+  { k: '麻酔', v: '点眼・局所麻酔。強い痛みはほとんどありません。手術中は光がまぶしく感じられます。' },
+  { k: '手術時間', v: '10分程度。角膜の縁に約2mmの小さな切開をつくります。' },
+  { k: '入院', v: '日帰り。手術後しばらく休んでからご帰宅いただきます。当日の運転はできません。' },
+  { k: '両眼の場合', v: '原則として片目ずつ行い、1〜2週間の間隔を空けてもう片方を行います。' },
+  { k: '執刀医', v: `主に${surgeon.name.replace(' ', '')}医師。手術前の説明と術後の診察も執刀医が担当します。` },
+];
+
+const lenses = [
+  { name: '単焦点レンズ', sub: '', ins: '保険適用', feat: '一つの距離(遠くまたは近く)にピントが合います。合わない距離は眼鏡で補います。最も実績の長い標準的なレンズです。', fit: '眼鏡の使用に抵抗がない方。見え方の質を最優先したい方。' },
+  { name: 'トーリックレンズ', sub: '', ins: '保険適用', feat: '乱視を同時に矯正する単焦点レンズです。乱視が強い方は、このレンズで眼鏡なしの見え方が改善します。', fit: '角膜乱視が一定以上ある方。' },
+  { name: '単焦点プラスレンズ', sub: 'レンティスコンフォート、アイハンス、NSP-3 など', ins: '保険適用', feat: '単焦点の見え方の質を保ちながら、ピントの合う範囲を少し広げたレンズです。遠くから中間(手元より少し先)まで見やすくなります。', fit: '保険の範囲で、眼鏡をかける場面を減らしたい方。' },
+  { name: '多焦点レンズ', sub: '', ins: '選定療養(手術は保険、レンズ代は自費)', feat: '遠くと近くなど複数の距離にピントが合い、眼鏡に頼る場面が大きく減ります。一方で、夜間の光のにじみ(ハロー・グレア)やコントラストの低下を感じることがあります。', fit: '眼鏡なしで生活したい希望が強く、見え方の特性を理解のうえ選べる方。目の状態により適さない場合があります。' },
+];
+
+const aftercare = [
+  { k: '通院の目安', v: '翌日、1週間後、1か月後を目安に診察します。視力は数日から数週間かけて安定します。片目ずつ手術する場合は、1〜2週間の間隔でもう片方を行います。' },
+  { k: '眼鏡について', v: '度数が安定する術後2〜3か月を目安に、きちんとした眼鏡を作ることをお勧めしています。近視の方で早く手元用の眼鏡が必要な場合は、ご希望により既製の老眼鏡(タスカルなど)を術後早期にお使いいただくこともできます。' },
+  { k: '生活上の注意', v: '処方した点眼薬を指示どおりに続けてください。目を強くこすらないようにし、洗顔・洗髪は術後4日目から可能です(それまでは目に水が入らないよう、拭く程度にとどめてください)。痛みや急な見えにくさがあれば、次の予約を待たずにご連絡ください。' },
+  { k: '服薬について', v: '白内障手術では、抗凝固薬(血液をさらさらにする薬)を休む必要はありません。普段どおり服用してください。術式によっては休薬が必要な場合があり、該当する方には事前に個別にお伝えします。' },
+];
+
+const faq = [
+  { q: '手術のタイミングはいつがよいですか?', a: '視力の数値だけでは決めません。運転やお仕事、読書など、生活の中で不便を感じるようになったときが一つの目安です。' },
+  { q: '手術後に白内障が再発することはありますか?', a: '眼内レンズを包む膜が濁る「後発白内障」が起こることがあります。外来でレーザー治療ができ、再手術は不要です。' },
+  { q: '多焦点レンズにすれば眼鏡は完全に不要になりますか?', a: '眼鏡に頼る場面は大きく減りますが、細かい文字や暗い場所などで眼鏡が必要になることはあります。「完全に不要」とは限らない点をご理解ください。' },
+  { q: '他院からの紹介でも手術を受けられますか?', a: 'はい。紹介状をお持ちのうえ、まず通常の外来を受診してください。紹介状がある方は初診の時間予約もできます。' },
+];
+---
+
+<Page
+  title="白内障手術"
+  description="イイダ眼科医院の白内障手術。日帰り・局所麻酔で、単焦点・トーリック・単焦点プラス・多焦点(選定療養)の眼内レンズから目の状態と生活に合わせて選びます。多焦点眼内レンズの選定療養費一覧、術後の経過と注意。"
+  eyebrow="CATARACT SURGERY"
+  lead="濁った水晶体を取り除き、眼内レンズに置き換える手術です。日帰りで行い、レンズは目の状態と生活に合わせて選びます。"
+  crumbs={[{ href: '/medical', label: '診療案内' }, { href: '/surgery', label: '手術のご案内' }, { label: '白内障手術' }]}
+  heroImage={{ src: '/images/placeholder-interior.svg', alt: '手術顕微鏡と術者' }}
+  toc={toc}
+  cta={{ title: '見え方の不便を感じたら、ご相談ください', text: '手術の要否やレンズの選択は、診察と検査のうえでご説明します。まずは通常の外来を受診してください。' }}
+>
+  <section id="about">
+    <h2 class="heading">白内障とは<span class="sub">ABOUT</span></h2>
+    <div class="two-col">
+      <div class="prose-block">
+        <p>目の中でカメラのレンズの役割をしている「水晶体」が濁り、かすんだり、まぶしく感じたり、視力が下がったりする病気です。加齢によるものが最も多く、誰にでも起こります。</p>
+        <p>初期は点眼薬で進行を遅らせることがありますが、濁りそのものを元に戻す薬はありません。日常生活に不便を感じるようになった段階で、手術を検討します。「いつ手術をするか」は、視力の数値だけでなく、お仕事や運転など生活の中での困りごとをうかがって一緒に決めます。</p>
+      </div>
+      <img class="figure" src="/images/placeholder-interior.svg" alt="水晶体の濁りの図解" width="640" height="420" loading="lazy" />
+    </div>
+  </section>
+
+  <section id="surgery">
+    <h2 class="heading">手術について<span class="sub">SURGERY</span></h2>
+    <p>点眼と局所の麻酔で行います。角膜の縁に小さな切開をつくり、超音波で濁った水晶体を砕いて吸い出し、折りたたんだ眼内レンズを挿入します。切開が小さいため縫合は原則不要です。</p>
+    <dl class="rule-list defs">
+      {surgeryFacts.map((d) => (
+        <div class="def">
+          <dt class="title">{d.k}</dt>
+          <dd class="small">{d.v}</dd>
+        </div>
+      ))}
+    </dl>
+    <p class="small"><a href="/surgery">手術のご案内</a>に、手術までの流れと当日のご案内(来院時間・付き添い・服装)をまとめています。</p>
+  </section>
+
+  <section id="lens">
+    <h2 class="heading">眼内レンズの選び方<span class="sub">LENS</span></h2>
+    <p>眼内レンズは一度入れると基本的に交換しません。保険診療の範囲でも複数の種類があり、乱視の有無や、どの距離を裸眼で見たいかによって選びます。診察時に、目の状態と生活の希望をうかがったうえでご提案します。</p>
+    <div class="table-wrap">
+      <table class="lens-table">
+        <thead>
+          <tr><th scope="col">種類</th><th scope="col">保険</th><th scope="col">特徴</th><th scope="col">向いている方</th></tr>
+        </thead>
+        <tbody>
+          {lenses.map((l) => (
+            <tr>
+              <th scope="row"><span class="lens-name">{l.name}</span>{l.sub && <span class="lens-sub">{l.sub}</span>}</th>
+              <td class="lens-ins">{l.ins}</td>
+              <td>{l.feat}</td>
+              <td>{l.fit}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="sentei">
+    <h2 class="heading">多焦点眼内レンズと選定療養<span class="sub">SENTEI RYOYO</span></h2>
+    <div class="prose-block">
+      <p>当院では2025年12月より、選定療養制度による多焦点眼内レンズを用いた白内障手術を行っています。</p>
+      <p>選定療養とは、患者さんご自身が選択して受ける追加的な医療サービスで、手術そのものは保険診療として行い、多焦点眼内レンズに係る費用のみを全額自己負担いただく制度です。令和2年4月より、術後の眼鏡矯正用具の廃止を目的とした多焦点眼内レンズを用いた白内障手術が、厚生労働省の定める選定療養の対象となりました。手術全体が自費になる「自由診療」とは異なります。</p>
+      <p>多焦点レンズには向き不向きがあります。緑内障や網膜の病気がある方、乱視が強い方などは、検査の結果によってお勧めしないことがあります。レンズの種類ごとの見え方の特性と費用を説明したうえで、ご本人に選んでいただきます。</p>
+    </div>
+
+    <div class="cost-structure" aria-label="費用の構成">
+      <p class="heading-sm">費用の構成</p>
+      <div class="cost-structure__row">
+        <div class="cost-box">
+          <span class="cost-box__k">白内障手術の費用</span>
+          <span class="cost-box__v">医療保険で給付</span>
+        </div>
+        <span class="cost-plus" aria-hidden="true">＋</span>
+        <div class="cost-box cost-box--accent">
+          <span class="cost-box__k">多焦点眼内レンズに係る費用</span>
+          <span class="cost-box__v">選定療養・全額自己負担</span>
+        </div>
+      </div>
+      <p class="caption">両眼に多焦点眼内レンズを使用する場合は、それぞれに記載の金額がかかります。保険診療分の自己負担額は負担割合により異なり、診察時に目安をお伝えします。</p>
+    </div>
+
+    <div class="fees">
+      <div class="fees__head">
+        <p class="heading-sm">多焦点眼内レンズ 選定療養費(片眼あたり)</p>
+        <p class="caption">{iolFees.asOf}</p>
+      </div>
+      <div class="table-wrap">
+        <table class="fee-table">
+          <thead>
+            <tr><th scope="col">メーカー・シリーズ</th><th scope="col">レンズの種類</th><th scope="col" class="num">片眼あたりの金額</th></tr>
+          </thead>
+          <tbody>
+            {iolFees.makers.map((m) => m.lenses.map((l, i) => (
+              <tr>
+                {i === 0 && <th scope="rowgroup" rowspan={m.lenses.length} class="maker">{m.maker}</th>}
+                <td>{l.name}</td>
+                <td class="num">{yen(l.fee)}</td>
+              </tr>
+            )))}
+          </tbody>
+        </table>
+      </div>
+      <p class="caption">金額は改定されることがあります。最新の金額は院内掲示および診察時の説明文書をご確認ください。</p>
+    </div>
+  </section>
+
+  <section id="aftercare">
+    <h2 class="heading">術後の経過と注意<span class="sub">AFTERCARE</span></h2>
+    <dl class="rule-list defs">
+      {aftercare.map((d) => (
+        <div class="def">
+          <dt class="title">{d.k}</dt>
+          <dd class="small">{d.v}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <section id="faq">
+    <h2 class="heading">よくあるご質問<span class="sub">FAQ</span></h2>
+    <dl class="rule-list">
+      {faq.map((f) => (
+        <div class="faq">
+          <dt class="title">{f.q}</dt>
+          <dd class="small">{f.a}</dd>
+        </div>
+      ))}
+    </dl>
+    <div class="related">
+      <a class="card" href="/surgery">手術のご案内(流れ・当日)<span>→</span></a>
+      <a class="card" href="/surgery/glaucoma">緑内障手術<span>→</span></a>
+      <a class="card" href="/clinic/doctors#yuto">担当医の紹介<span>→</span></a>
+    </div>
+  </section>
+</Page>
+
+<style>
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    scroll-margin-top: 80px;
+  }
+  .small {
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  dd {
+    margin: 0;
+  }
+  .two-col {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .prose-block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .figure {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    background: var(--surface-100);
+  }
+  .def,
+  .faq {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* 表 */
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface-card);
+    border: var(--border-hair) solid var(--line-200);
+    font-size: 13.5px;
+    line-height: 1.7;
+    text-align: left;
+  }
+  th,
+  td {
+    padding: 12px 12px;
+    border-bottom: var(--border-hair) solid var(--line-050);
+    vertical-align: top;
+  }
+  thead th {
+    background: var(--surface-100);
+    font-weight: 700;
+    border-bottom: var(--border-rule) solid var(--line-strong);
+    white-space: nowrap;
+  }
+  .lens-table {
+    min-width: 720px;
+  }
+  .lens-table tbody th {
+    font-weight: 700;
+    width: 160px;
+  }
+  .lens-name {
+    display: block;
+  }
+  .lens-sub {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--ink-500);
+    margin-top: 2px;
+  }
+  .lens-ins {
+    width: 120px;
+    font-weight: 500;
+    color: var(--navy-700);
+  }
+
+  /* 費用の構成 */
+  .cost-structure {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cost-structure__row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .cost-box {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 18px;
+    background: var(--surface-card);
+    border: var(--border-hair) solid var(--line-200);
+    border-radius: var(--radius-sm);
+  }
+  .cost-box--accent {
+    border-color: var(--navy-700);
+  }
+  .cost-box__k {
+    font-weight: 700;
+    color: var(--ink-900);
+  }
+  .cost-box__v {
+    font-size: 13px;
+    color: var(--ink-500);
+  }
+  .cost-box--accent .cost-box__v {
+    color: var(--navy-700);
+    font-weight: 500;
+  }
+  .cost-plus {
+    align-self: center;
+    font-family: var(--font-serif);
+    font-size: 24px;
+    color: var(--ink-500);
+  }
+
+  /* 料金表 */
+  .fees {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .fees__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .fee-table {
+    min-width: 520px;
+  }
+  .fee-table .maker {
+    font-weight: 700;
+    width: 220px;
+    border-right: var(--border-hair) solid var(--line-050);
+  }
+  .fee-table .num {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .fee-table td.num {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink-900);
+  }
+  .related {
+    display: grid;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .related .card {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+    color: var(--ink-900);
+    text-decoration: none;
+  }
+
+  @media (min-width: 768px) {
+    .two-col {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+    .def {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+    }
+    .cost-structure__row {
+      flex-direction: row;
+      align-items: stretch;
+      gap: 16px;
+    }
+    .related {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>
