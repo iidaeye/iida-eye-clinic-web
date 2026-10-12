@@ -1,6 +1,6 @@
 # iida-eye-clinic-web
 
-イイダ眼科医院 (静岡市葵区) 公式サイト。Astro 7 の完全静的サイト、Cloudflare Pages でホスティング。詳細は README.md と docs/ を参照。
+イイダ眼科医院 (静岡市葵区) 公式サイト。Astro 7 の完全静的サイト、Cloudflare Workers (静的アセット) でホスティング。詳細は README.md と docs/ を参照。
 
 ## 原則
 

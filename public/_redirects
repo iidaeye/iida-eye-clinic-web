@@ -1,4 +1,4 @@
-# 旧WordPressサイトのURLから新サイトへの301リダイレクト (Cloudflare Pages)
+# 旧WordPressサイトのURLから新サイトへの301リダイレクト (Cloudflare Workers 静的アセット)
 # 旧URL一覧はWP管理画面から取得後に追記する
 /clinic/          /clinic        301
 /medical/         /medical       301

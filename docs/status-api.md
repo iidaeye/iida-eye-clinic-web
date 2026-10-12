@@ -1,6 +1,6 @@
 # 診療状況・休診カレンダー API との接続
 
-トップページの「ただいまの診療状況」と「休診カレンダー」は、既存システム (line.iida-eye.net) の API をブラウザから直接 fetch して表示する。URL は環境変数で指定する (Cloudflare Pages の Environment variables に設定)。
+トップページの「ただいまの診療状況」と「休診カレンダー」は、既存システム (line.iida-eye.net) の API をブラウザから直接 fetch して表示する。URL は環境変数で指定する (Cloudflare Workers の Build variables に設定)。
 
 ```
 PUBLIC_STATUS_API_URL=https://line.iida-eye.net/api/...
@@ -11,13 +11,13 @@ PUBLIC_CALENDAR_API_URL=https://line.iida-eye.net/api/...
 
 ## CORS
 
-`iida-eye-clinic.jp` (開発中は `*.pages.dev`) から fetch するため、API 側で次のヘッダーが必要:
+`iida-eye-clinic.jp` (開発中は `iida-eye-clinic-web.winter-silence-cb11.workers.dev`) から fetch するため、API 側で次のヘッダーが必要:
 
 ```
 Access-Control-Allow-Origin: https://iida-eye-clinic.jp
 ```
 
-(開発中は `*` か、`https://iida-eye-clinic-web.pages.dev` も許可する。) 付けられない場合は Cloudflare Pages Functions (`functions/api/status.ts`) で薄いプロキシを作る。
+(開発中は `*` か、`https://iida-eye-clinic-web.winter-silence-cb11.workers.dev` も許可する。) 付けられない場合は Worker スクリプト (`src/worker.ts` を追加し `wrangler.jsonc` の `main` に指定) で薄いプロキシを作る。
 
 ## 診療状況: 現在の想定レスポンス
 

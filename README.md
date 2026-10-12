@@ -3,7 +3,7 @@
 [iida-eye-clinic.jp](https://iida-eye-clinic.jp) のソース。2026年の新築移転に合わせたリニューアル版。
 
 - **Astro 7** (完全静的生成) + TypeScript
-- ホスティング: **Cloudflare Pages** (main へ push で自動デプロイ)
+- ホスティング: **Cloudflare Workers 静的アセット** (main へ push で自動デプロイ)。仮URL: https://iida-eye-clinic-web.winter-silence-cb11.workers.dev
 - お知らせ: FileMaker から GitHub へ push ([docs/filemaker-push.md](docs/filemaker-push.md))
 - 診療状況・休診カレンダー: 既存システムの API をブラウザから取得 ([docs/status-api.md](docs/status-api.md))
 - デザイン: `design/tokens.json` を正とする ([デザインシステム](https://claude.ai/artifact/VPk3LSdxqiG9UoPHErwQeW))
@@ -42,7 +42,7 @@ src/
 public/
   logo/*.svg              ロゴ (縦組み・シンボル・文字)
   images/                 写真 (exterior.jpg は仮写真。プロ撮影後に差し替え)
-  _redirects / _headers   Cloudflare Pages の設定
+  _redirects / _headers   リダイレクト・レスポンスヘッダー (Workers 静的アセットが読む)
 docs/                     連携仕様
 ```
 

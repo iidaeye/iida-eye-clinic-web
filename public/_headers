@@ -1,4 +1,4 @@
-# Cloudflare Pages のレスポンスヘッダー
+# レスポンスヘッダー (Cloudflare Workers 静的アセット)
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN

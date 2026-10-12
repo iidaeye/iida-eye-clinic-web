@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 
 /**
  * イイダ眼科医院 公式サイト
- * - 完全静的生成 (Cloudflare Pages でホスティング)
+ * - 完全静的生成 (Cloudflare Workers 静的アセットでホスティング)
  * - 日本語をデフォルト、英語は /en/ 配下の主要4ページのみ
  */
 export default defineConfig({

@@ -1,9 +1,9 @@
 # FileMaker → GitHub へのお知らせ push 仕様
 
-お知らせは FileMaker (FMS) で入力し、「公開」スクリプトが GitHub Contents API で `src/content/news/` に Markdown を書き込む。push されると Cloudflare Pages が自動でビルド・公開する。FMS は外部に公開しない (outbound の HTTPS のみ)。
+お知らせは FileMaker (FMS) で入力し、「公開」スクリプトが GitHub Contents API で `src/content/news/` に Markdown を書き込む。push されると Cloudflare Workers Builds が自動でビルド・公開する。FMS は外部に公開しない (outbound の HTTPS のみ)。
 
 ```
-FileMaker で入力 → 公開スクリプト → GitHub Contents API (PUT) → main に commit → Cloudflare Pages が自動ビルド → 公開
+FileMaker で入力 → 公開スクリプト → GitHub Contents API (PUT) → main に commit → Cloudflare Workers Builds が自動ビルド → 公開
 ```
 
 ## 1. ファイルの形式
@@ -81,7 +81,7 @@ Base64 は `Base64EncodeRFC ( 4648 ; TextEncode ( $markdown ; "utf-8" ; 3 ) )` �
 
 ## 3. 公開までの時間と確認
 
-push から公開まで Cloudflare Pages のビルドで 1〜2 分。公開結果は `/news` で確認する。ビルドが失敗した場合は Cloudflare Pages のダッシュボードに原因 (多くは frontmatter の形式エラー) が出る。失敗しても前回の公開内容がそのまま残る。
+push から公開まで Cloudflare Workers Builds で 1〜2 分。公開結果は `/news` で確認する。ビルドが失敗した場合は Cloudflare ダッシュボード (Workers & Pages → iida-eye-clinic-web → Deployments) に原因 (多くは frontmatter の形式エラー) が出る。失敗しても前回の公開内容がそのまま残る。
 
 ## 4. コラム
 
