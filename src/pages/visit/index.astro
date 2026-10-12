@@ -20,7 +20,7 @@ const toc = [
 ];
 
 const flow = [
-  { title: '受付', text: 'セルフ受付機でチェックイン。LINEで順番をお取りの方も、来院時にチェックインをお願いします。', optional: false },
+  { title: '受付', text: 'セルフ受付機でチェックイン。受診目的を選び、「新しい症状」の場合は画面で簡単な問診に答えます。受付票のQRコードを読み取ると、LINEミニアプリで現在の状況を確認できます。時間予約のある方は「受付」を押すだけで完了です。', optional: false },
   { title: '問診', text: '症状や経過をうかがいます。', optional: true },
   { title: '検査1', text: '視力・眼圧など基本の検査。', optional: false },
   { title: '検査2', text: '視野・OCT・眼底など、必要な場合のみ追加の検査。', optional: true },
@@ -81,7 +81,13 @@ const callOrder = [
       <div class="card card--accent">
         <p class="eyebrow">来院して受付</p>
         <p class="title">現地受付</p>
-        <p class="small">院内のセルフ受付機で受け付けます。受付開始時間が早いため、早い受付番号をお取りいただけます。ご不明な点がある場合は受付スタッフにお声がけください。</p>
+        <p class="small">院内のセルフ受付機で受け付けます。受付開始時間が早いため、早い受付番号をお取りいただけます。</p>
+        <ul class="kiosk small">
+          <li><strong>QRコード付き診察券・LINE診察券・次回予定票</strong>をお持ちの方は、バーコードリーダーにかざすだけで受付できます。</li>
+          <li><strong>QRコードがない方</strong>は「番号で受付」を押し、診察券番号と生年月日の月日を4桁(例: 3月5日 → 0305)で入力します。</li>
+          <li><strong>初診の方・診察券番号が分からない方</strong>は、画面下の専用ボタンからお進みください。</li>
+        </ul>
+        <p class="small muted">操作がご不明な場合は受付スタッフにお声がけください。</p>
       </div>
       <div class="card card--primary">
         <p class="eyebrow">来院前に順番を取る</p>
@@ -96,7 +102,7 @@ const callOrder = [
         <li>受付は原則として<strong>セルフ受付機</strong>でお願いしています。ご不明な点がある場合のみ、受付にお声がけください。</li>
         <li>LINEで順番をお取りいただいた場合も、来院時に<strong>セルフ受付機でのチェックイン</strong>をお願いします。</li>
         <li>マイナ保険証(または資格確認書)での<strong>資格確認</strong>も、受付機であらかじめお済ませください。</li>
-        <li>お呼びした際にご不在だった場合は「呼び出し済み」となります。ご来院後にセルフ受付機で再度チェックインすると、改めてお呼びします。</li>
+        <li>外出から戻られたときは、セルフ受付機で<strong>再度受付</strong>をお願いします。お呼びした際にご不在だった場合は「呼び出し済み」となりますが、再度受付すると改めてお呼びします。</li>
       </ul>
     </div>
   </section>
@@ -106,7 +112,7 @@ const callOrder = [
     <div class="two-col">
       <div>
         <h3 class="heading-sm">初診でもLINEで順番が取れます</h3>
-        <p class="small">当院が初めての方も、公式LINEの「診察券番号なしで順番を取る」からオンラインで順番をお取りいただけます。お名前・生年月日・電話番号・気になる症状などをご入力ください。ご来院時に受付窓口で診察券をお作りし、診察券番号を連携します。</p>
+        <p class="small">当院が初めての方も、公式LINEの「診察券番号なしで順番を取る」からオンラインで順番をお取りいただけます。お名前・生年月日・電話番号・気になる症状などをご入力ください(1つのLINEアカウントから1日2人まで)。ご来院時に受付窓口で診察券をお作りし、診察券番号を連携します。</p>
         <p class="small">オンライン受付をご利用にならない場合は、来院後にセルフ受付機で受付できます。操作がご不明な場合は受付スタッフにお声がけください。</p>
         <div class="notice notice--compact">
           <p class="title">紹介状をお持ちの方は、初診の時間予約ができます</p>
@@ -177,6 +183,7 @@ const callOrder = [
         <li><span class="line-points__k">自宅で待てる</span><span class="small muted">順番が近づくまで院外で過ごせます</span></li>
         <li><span class="line-points__k">スマホで順番確認</span><span class="small muted">いまの状態と待ち人数が分かります</span></li>
         <li><span class="line-points__k">LINEで呼び出し通知</span><span class="small muted">「まもなく」になると通知が届きます</span></li>
+        <li><span class="line-points__k">来院前に問診(任意)</span><span class="small muted">LINEで問診に回答すると紙の問診票の代わりになります。従来どおり紙でも構いません</span></li>
       </ul>
       <div class="line-box__action">
         <a class="btn btn--line btn--block" href={clinic.links.line} target="_blank" rel="noopener">公式LINEを友だち追加</a>
@@ -282,6 +289,17 @@ const callOrder = [
   .cards-2 .btn {
     align-self: flex-start;
     margin-top: 6px;
+  }
+  .kiosk,
+  .notice ul {
+    list-style: disc;
+  }
+  .kiosk {
+    margin-top: 4px;
+    padding-left: 1.2em;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
   .notice {
     padding: 18px 20px;
