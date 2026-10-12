@@ -135,7 +135,7 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
       const first = new Date(y, m, 1);
       const last = new Date(y, m + 1, 0);
       const api = data && data !== 'error' ? data : null;
-      const cells: string[] = dayNames.map((d) => `<div class="calendar__dow" role="columnheader">${d}</div>`);
+      const cells: string[] = dayNames.map((d, i) => `<div class="calendar__dow${i === 0 ? ' is-sun' : i === 6 ? ' is-sat' : ''}" role="columnheader">${d}</div>`);
       for (let i = 0; i < first.getDay(); i++) cells.push('<div class="calendar__empty"></div>');
       for (let d = 1; d <= last.getDate(); d++) {
         const date = new Date(y, m, d);
@@ -164,7 +164,7 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
           ? `${date.getMonth() + 1}月${date.getDate()}日(${dayNames[date.getDay()]})`
           : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
         const what = document.createElement('span');
-        what.className = 'calendar__ex-kind';
+        what.className = `calendar__ex-kind${v.kind ? ` is-${v.kind}` : ''}`;
         what.textContent = kindLabel(v.kind);
         li.append(when, what);
         if (v.reason) {
@@ -251,6 +251,12 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     font-weight: 700;
     color: var(--ink-500);
   }
+  .calendar__grid :global(.calendar__dow.is-sun) {
+    color: var(--alert-700);
+  }
+  .calendar__grid :global(.calendar__dow.is-sat) {
+    color: var(--navy-700);
+  }
   .calendar__grid :global(.calendar__day) {
     display: flex;
     align-items: center;
@@ -260,17 +266,22 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     font-size: 14px;
     font-weight: 500;
   }
+  /* 塗り分けは旧サイト (休診=ピンク、午後休診=水色、お知らせ=黄) を踏襲。色は design/tokens.json の cal-* */
   .calendar__grid :global(.calendar__day.is-closed) {
-    background: var(--line-050);
-    color: var(--ink-disabled);
+    background: var(--cal-closed-bg);
+    color: var(--cal-closed-ink);
   }
   .calendar__grid :global(.calendar__day.is-pm-closed) {
-    background: linear-gradient(to bottom, transparent 50%, var(--line-050) 50%);
+    background: var(--cal-pm-bg);
+    color: var(--cal-pm-ink);
   }
   .calendar__grid :global(.calendar__day.is-am-closed) {
-    background: linear-gradient(to bottom, var(--line-050) 50%, transparent 50%);
+    background: var(--cal-am-bg);
+    color: var(--cal-am-ink);
   }
   .calendar__grid :global(.calendar__day.is-note) {
+    background: var(--cal-special-bg);
+    color: var(--cal-special-ink);
     box-shadow: inset 0 0 0 2px var(--brand-green);
   }
   .calendar__grid :global(.calendar__day.is-today span) {
@@ -301,18 +312,19 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     border-radius: 3px;
   }
   .dot--closed {
-    background: var(--line-050);
-    border: 1px solid var(--line-100);
+    background: var(--cal-closed-bg);
+    border: 1px solid var(--cal-closed-ink);
   }
   .dot--pm {
-    background: linear-gradient(to bottom, var(--surface-card) 50%, var(--line-050) 50%);
-    border: 1px solid var(--line-100);
+    background: var(--cal-pm-bg);
+    border: 1px solid var(--cal-pm-ink);
   }
   .dot--am {
-    background: linear-gradient(to bottom, var(--line-050) 50%, var(--surface-card) 50%);
-    border: 1px solid var(--line-100);
+    background: var(--cal-am-bg);
+    border: 1px solid var(--cal-am-ink);
   }
   .dot--note {
+    background: var(--cal-special-bg);
     box-shadow: inset 0 0 0 2px var(--brand-green);
   }
 
@@ -337,9 +349,24 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     white-space: nowrap;
   }
   .calendar__exceptions :global(.calendar__ex-kind) {
+    padding: 0 8px;
+    border-radius: 3px;
     font-weight: 700;
-    color: var(--alert-700);
     white-space: nowrap;
+    background: var(--cal-closed-bg);
+    color: var(--cal-closed-ink);
+  }
+  .calendar__exceptions :global(.calendar__ex-kind.is-pm-closed) {
+    background: var(--cal-pm-bg);
+    color: var(--cal-pm-ink);
+  }
+  .calendar__exceptions :global(.calendar__ex-kind.is-am-closed) {
+    background: var(--cal-am-bg);
+    color: var(--cal-am-ink);
+  }
+  .calendar__exceptions :global(.calendar__ex-kind.is-note) {
+    background: var(--cal-special-bg);
+    color: var(--cal-special-ink);
   }
   .calendar__exceptions :global(.calendar__ex-reason) {
     flex-basis: 100%;
