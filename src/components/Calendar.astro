@@ -235,21 +235,36 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     font-weight: 700;
     font-size: 14px;
   }
+  /* 格子: セルの右と下に 1px の薄い罫線、外枠は 1px の濃い罫線 */
   .calendar__grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 4px;
-    padding: 12px;
+    gap: 0;
     background: var(--surface-card);
     border: var(--border-hair) solid var(--line-200);
     border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .calendar__grid :global(.calendar__dow),
+  .calendar__grid :global(.calendar__day),
+  .calendar__grid :global(.calendar__empty) {
+    border-right: var(--border-hair) solid var(--line-050);
+    border-bottom: var(--border-hair) solid var(--line-050);
+  }
+  .calendar__grid :global(:nth-child(7n)) {
+    border-right: 0;
+  }
+  .calendar__grid :global(:nth-last-child(-n + 7)) {
+    border-bottom: 0;
   }
   .calendar__grid :global(.calendar__dow) {
-    padding: 4px 0;
+    padding: 6px 0;
     text-align: center;
     font-size: 11.5px;
     font-weight: 700;
     color: var(--ink-500);
+    background: var(--surface-100);
+    border-bottom-color: var(--line-200);
   }
   .calendar__grid :global(.calendar__dow.is-sun) {
     color: var(--alert-700);
@@ -262,7 +277,6 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     align-items: center;
     justify-content: center;
     aspect-ratio: 1;
-    border-radius: var(--radius-sm);
     font-size: 14px;
     font-weight: 500;
   }
@@ -271,13 +285,24 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     background: var(--cal-closed-bg);
     color: var(--cal-closed-ink);
   }
+  /* 半日休診: 左上=午前、右下=午後。斜線で区切り、休診側だけ塗る */
   .calendar__grid :global(.calendar__day.is-pm-closed) {
-    background: var(--cal-pm-bg);
-    color: var(--cal-pm-ink);
+    background: linear-gradient(
+      to bottom right,
+      transparent calc(50% - 0.5px),
+      var(--line-100) calc(50% - 0.5px),
+      var(--line-100) calc(50% + 0.5px),
+      var(--cal-pm-bg) calc(50% + 0.5px)
+    );
   }
   .calendar__grid :global(.calendar__day.is-am-closed) {
-    background: var(--cal-am-bg);
-    color: var(--cal-am-ink);
+    background: linear-gradient(
+      to bottom right,
+      var(--cal-am-bg) calc(50% - 0.5px),
+      var(--line-100) calc(50% - 0.5px),
+      var(--line-100) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    );
   }
   .calendar__grid :global(.calendar__day.is-note) {
     background: var(--cal-special-bg);
@@ -316,11 +341,11 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     border: 1px solid var(--cal-closed-ink);
   }
   .dot--pm {
-    background: var(--cal-pm-bg);
+    background: linear-gradient(to bottom right, var(--surface-card) 50%, var(--cal-pm-bg) 50%);
     border: 1px solid var(--cal-pm-ink);
   }
   .dot--am {
-    background: var(--cal-am-bg);
+    background: linear-gradient(to bottom right, var(--cal-am-bg) 50%, var(--surface-card) 50%);
     border: 1px solid var(--cal-am-ink);
   }
   .dot--note {
