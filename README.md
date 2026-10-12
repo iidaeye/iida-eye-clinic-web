@@ -8,6 +8,16 @@
 - 診療状況・休診カレンダー: 既存システムの API をブラウザから取得 ([docs/status-api.md](docs/status-api.md))
 - デザイン: `design/tokens.json` を正とする ([デザインシステム](https://claude.ai/artifact/VPk3LSdxqiG9UoPHErwQeW))
 
+## 関連資料 (claude.ai アーティファクト。オーナーのアカウントで開く)
+
+- 構成書 (方針・サイトマップ・運用体制・残タスク): https://claude.ai/code/artifact/986e8d24-e1e5-46c5-93d1-cbdd447976fa
+- ワイヤーフレーム (トップ、PC/モバイル): https://claude.ai/artifact/RcVbGBxj18stjrC6SAfh7u (Canva: https://www.canva.com/d/zk4MyiKvfPPuJTL)
+- デザイン案 A〜G (G案採用、PC/モバイル): https://claude.ai/artifact/CyyHeHQdPiLeHzFmEp4Gcw
+- デザインシステム (トークン・ブランドブック・ロゴSVG): https://claude.ai/artifact/VPk3LSdxqiG9UoPHErwQeW
+- 下層ページのデザイン (手術のご案内・白内障・こどもの近視抑制): https://claude.ai/artifact/AEJczNBt4BU1HSpyZKSQ17
+- セルフ受付機の画面案 (待機・読み取り直後・完了): https://claude.ai/artifact/HSXYvkQwbWw53MaBDFidhg
+- 聞き取りメモ・[要確認] 一覧: [docs/content-notes.md](docs/content-notes.md)
+
 ## 開発
 
 ```bash
