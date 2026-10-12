@@ -1,0 +1,498 @@
+---
+/**
+ * 受診案内 (/visit)
+ * 再診の方は受付方法の確認、初めての方は持ち物と流れの確認、の両方に答える1ページ。
+ * 受付ルールの文言は LINE 側の「受診のご案内」(line.iida-eye.net/static/clinic-guide) に合わせる。
+ * 医院情報 (時間・持ち物・アクセス) は clinic.json から参照する。
+ */
+import Page from '@/layouts/Page.astro';
+import Hours from '@/components/Hours.astro';
+import { clinic } from '@/lib/site';
+
+const toc = [
+  { href: '#hours', label: '受付時間・診療時間' },
+  { href: '#reception', label: '受付の方法' },
+  { href: '#first', label: '初めての方へ' },
+  { href: '#flow', label: '受診の流れと呼び出し' },
+  { href: '#line', label: 'LINE受付' },
+  { href: '#notes', label: '眼鏡・コンタクト／お支払い' },
+  { href: '#access', label: 'アクセス・駐車場' },
+];
+
+const flow = [
+  { title: '受付', text: 'セルフ受付機でチェックイン。LINEで順番をお取りの方も、来院時にチェックインをお願いします。', optional: false },
+  { title: '問診', text: '症状や経過をうかがいます。', optional: true },
+  { title: '検査1', text: '視力・眼圧など基本の検査。', optional: false },
+  { title: '検査2', text: '視野・OCT・眼底など、必要な場合のみ追加の検査。', optional: true },
+  { title: '診察', text: '医師が診察し、結果と今後の方針をご説明します。', optional: false },
+  { title: '会計', text: 'セミセルフレジでお支払い。処方箋をお渡しします。', optional: false },
+];
+
+const states = [
+  { name: '待機', text: '順番待ちの状態です。院外でお過ごしいただけます。', tone: 'muted' },
+  { name: 'まもなく', text: 'まもなくお呼びします。院内にお戻りください。', tone: 'accent' },
+  { name: '呼び出し中', text: 'お呼びしています。', tone: 'accent' },
+  { name: '呼び出し済み', text: 'お呼びしましたがご不在でした。セルフ受付機で再度チェックインしてください。', tone: 'warn' },
+  { name: '対応中', text: '現在対応中です。', tone: 'muted' },
+  { name: '完了', text: 'この段階は完了しました。', tone: 'muted' },
+];
+
+const callOrder = [
+  { n: '1', title: '受付番号順に「まもなく」へ', text: '受付番号の順番で「待機」から「まもなく」の状態に移ります。' },
+  { n: '2', title: '「まもなく」になった順番でお呼びします', text: '検査の種類によって経路が異なるため、別の経路から来た方が受付番号順で前に入ることがあり、待ち人数が増減する場合があります。' },
+];
+---
+
+<Page
+  title="受診案内"
+  description="イイダ眼科医院の受診案内。受付時間、LINE・セルフ受付機・窓口での受付方法、初めての方の持ち物、受診の流れと呼び出しの仕組み、アクセス・駐車場。"
+  eyebrow="FOR YOUR VISIT"
+  lead="一般の外来は予約なしの順番制です。公式LINEから来院前に順番を取ることも、来院してセルフ受付機や窓口で受け付けることもできます。"
+  crumbs={[{ label: '受診案内' }]}
+  toc={toc}
+  cta={{ title: 'ご不明な点はお電話で', text: '受付方法や持ち物についてのご質問は、受付時間内にお電話ください。' }}
+>
+  <section id="hours">
+    <h2 class="heading">受付時間・診療時間<span class="sub">HOURS</span></h2>
+    <div class="hours-grid">
+      <Hours heading={false} />
+      <dl class="rule-list times">
+        {clinic.hours.consultation.map((c, i) => (
+          <div class="time">
+            <dt class="title">{c.label}の診療</dt>
+            <dd>
+              <span class="time__num">{c.time}</span>
+              <span class="small muted">受付 {clinic.hours.reception[i].time}</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+    <p class="small">
+      受付は診療開始より早く始まります。午後の最終受付は <strong>{clinic.hours.reception[1].time.split('〜')[1]}</strong> です。
+      水曜日は手術と予約検査の日のため、通常の外来診療は行っていません。休診日の詳細は<a href="/#calendar">休診カレンダー</a>をご覧ください。
+    </p>
+  </section>
+
+  <section id="reception">
+    <h2 class="heading">受付の方法<span class="sub">CHECK-IN</span></h2>
+    <p>診察券をお持ちの方は、次の2つの方法で受付できます。</p>
+    <div class="cards-2">
+      <div class="card card--accent">
+        <p class="eyebrow">来院して受付</p>
+        <p class="title">現地受付</p>
+        <p class="small">窓口またはセルフ受付機で受け付けます。受付開始時間が早いため、早い受付番号をお取りいただけます。</p>
+      </div>
+      <div class="card card--primary">
+        <p class="eyebrow">来院前に順番を取る</p>
+        <p class="title">LINE受付</p>
+        <p class="small">ご自宅などから順番をお取りいただけます。順番が近づくとLINEでお知らせしますので、そのタイミングでご来院ください。</p>
+        <a class="btn btn--line" href={clinic.links.line} target="_blank" rel="noopener">LINEで順番をとる</a>
+      </div>
+    </div>
+    <div class="notice">
+      <p class="title">ご来院時のお願い</p>
+      <ul class="small">
+        <li>LINEで順番をお取りいただいた場合も、来院時に<strong>セルフ受付機でのチェックイン</strong>をお願いします。</li>
+        <li>マイナ保険証(または資格確認書)での<strong>資格確認</strong>も、受付機であらかじめお済ませください。</li>
+        <li>お呼びした際にご不在だった場合は「呼び出し済み」となります。ご来院後にセルフ受付機で再度チェックインすると、改めてお呼びします。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="first">
+    <h2 class="heading">初めての方へ<span class="sub">FIRST VISIT</span></h2>
+    <div class="two-col">
+      <div>
+        <h3 class="heading-sm">初診でもLINEで順番が取れます</h3>
+        <p class="small">当院が初めての方も、公式LINEの「診察券番号なしで順番を取る」からオンラインで順番をお取りいただけます。お名前・生年月日・電話番号・気になる症状などをご入力ください。ご来院時に受付窓口で診察券をお作りし、診察券番号を連携します。</p>
+        <p class="small">オンライン受付をご利用にならない場合は、直接受付窓口またはセルフ受付機で受付できます。</p>
+        <div class="notice notice--compact">
+          <p class="title">紹介状をお持ちの方は、初診の時間予約ができます</p>
+          <p class="small">病院や診療所からの紹介状(診療情報提供書)をお持ちの方は、お電話で初診の時間予約を受け付けています。健康診断の結果用紙のみの場合は対象外となり、通常の順番制での受付となります。<br />TEL <a href={clinic.telHref}>{clinic.tel}</a>(受付時間内)</p>
+        </div>
+      </div>
+      <div>
+        <h3 class="heading-sm">お持ちいただくもの</h3>
+        <dl class="rule-list bring">
+          {clinic.visit.bring.map((b) => (
+            <div class="bring__item">
+              <dt class="title">{b.item}</dt>
+              <dd class="small muted">{b.note}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section id="flow">
+    <h2 class="heading">受診の流れと呼び出し<span class="sub">FLOW</span></h2>
+    <ol class="flow">
+      {flow.map((f, i) => (
+        <li class:list={['flow__step', { 'flow__step--optional': f.optional }]}>
+          <span class="flow__n">{String(i + 1).padStart(2, '0')}</span>
+          <p class="title">{f.optional ? `(${f.title})` : f.title}</p>
+          <p class="small muted">{f.text}</p>
+        </li>
+      ))}
+    </ol>
+    <p class="caption">( )内は必要な場合のみ行います。</p>
+
+    <div class="two-col">
+      <div>
+        <h3 class="heading-sm">各段階の状態表示</h3>
+        <p class="small">受付機やLINEの画面に、いまの状態が表示されます。<strong>「待機」の間は院外でお過ごしいただけます。「まもなく」になってから院内にお戻りいただければ十分です。</strong></p>
+        <dl class="rule-list states">
+          {states.map((s) => (
+            <div class="state">
+              <dt><span class:list={['state__badge', `state__badge--${s.tone}`]}>{s.name}</span></dt>
+              <dd class="small">{s.text}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <div>
+        <h3 class="heading-sm">呼び出しの順番について</h3>
+        <ol class="order">
+          {callOrder.map((c) => (
+            <li class="order__item">
+              <span class="order__n">{c.n}</span>
+              <div>
+                <p class="title">{c.title}</p>
+                <p class="small muted">{c.text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section id="line">
+    <h2 class="heading">LINE受付のご案内<span class="sub">LINE</span></h2>
+    <div class="line-box">
+      <ul class="line-points">
+        <li><span class="line-points__k">自宅で待てる</span><span class="small muted">順番が近づくまで院外で過ごせます</span></li>
+        <li><span class="line-points__k">スマホで順番確認</span><span class="small muted">いまの状態と待ち人数が分かります</span></li>
+        <li><span class="line-points__k">LINEで呼び出し通知</span><span class="small muted">「まもなく」になると通知が届きます</span></li>
+      </ul>
+      <div class="line-box__action">
+        <a class="btn btn--line btn--block" href={clinic.links.line} target="_blank" rel="noopener">公式LINEを友だち追加</a>
+        <p class="caption">初回のみ、患者ID(診察券番号)と生年月日の登録が必要です。使い方の詳細は <a href={clinic.links.lineGuide} target="_blank" rel="noopener">LINE受付のご案内</a> をご覧ください。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="notes">
+    <h2 class="heading">眼鏡・コンタクト／お支払い<span class="sub">NOTES</span></h2>
+    <dl class="rule-list defs">
+      <div class="def">
+        <dt class="title">眼鏡・コンタクトレンズの処方</dt>
+        <dd class="small">検査や装用練習に時間がかかります。{clinic.visit.glassesDeadline}</dd>
+      </div>
+      <div class="def">
+        <dt class="title">散瞳検査(眼底検査)</dt>
+        <dd class="small">{clinic.visit.dilation}</dd>
+      </div>
+      <div class="def">
+        <dt class="title">お支払い</dt>
+        <dd class="small">会計はセミセルフレジで行います。{clinic.visit.payment}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section id="access">
+    <h2 class="heading">アクセス・駐車場<span class="sub">ACCESS</span></h2>
+    <div class="access">
+      <iframe class="map" src={clinic.mapEmbed} width="600" height="300" style="border:0" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title={`${clinic.name}の地図`}></iframe>
+      <div class="access__text">
+        <p class="title">{clinic.name}</p>
+        <p class="small">〒{clinic.address.postal} {clinic.address.full}<br />TEL <a href={clinic.telHref}>{clinic.tel}</a></p>
+        <dl class="rule-list defs">
+          <div class="def">
+            <dt class="title">お車で</dt>
+            <dd class="small">{clinic.access.landmark}<br />{clinic.access.parking}</dd>
+          </div>
+          {clinic.access.bus.map((b) => (
+            <div class="def">
+              <dt class="title">バスで({b.from})</dt>
+              <dd class="small">{b.text}</dd>
+            </div>
+          ))}
+        </dl>
+        <a class="btn" href={clinic.access.mapLink} target="_blank" rel="noopener">Googleマップで開く</a>
+      </div>
+    </div>
+  </section>
+</Page>
+
+<style>
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    scroll-margin-top: 80px;
+  }
+  .small {
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  h3.heading-sm {
+    margin-bottom: 4px;
+  }
+  dd {
+    margin: 0;
+  }
+
+  /* 受付時間 */
+  .hours-grid {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .time {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .time dd {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .time__num {
+    font-family: var(--font-serif);
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--navy-700);
+  }
+
+  /* 受付方法 */
+  .cards-2 {
+    display: grid;
+    gap: 12px;
+  }
+  .cards-2 .card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cards-2 .btn {
+    align-self: flex-start;
+    margin-top: 6px;
+  }
+  .notice {
+    padding: 18px 20px;
+    border: var(--border-hair) solid var(--line-200);
+    border-left: var(--border-accent) solid var(--navy-700);
+    border-radius: var(--radius-sm);
+    background: var(--surface-card);
+  }
+  .notice--compact {
+    margin-top: 4px;
+  }
+  .notice--compact .small {
+    margin-top: 6px;
+  }
+  .notice ul {
+    margin-top: 8px;
+    padding-left: 1.2em;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* 2カラム */
+  .two-col {
+    display: grid;
+    gap: var(--space-6);
+  }
+  .two-col > div {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .bring__item,
+  .def {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* 流れ */
+  .flow {
+    display: grid;
+    border-top: var(--border-rule) solid var(--line-strong);
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .flow__step {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 0;
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .flow__step:last-child {
+    border-bottom: 0;
+  }
+  .flow__step--optional .title {
+    color: var(--ink-500);
+  }
+  .flow__n {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--navy-700);
+  }
+  .flow__step--optional .flow__n {
+    color: var(--ink-disabled);
+  }
+
+  /* 状態 */
+  .state {
+    display: grid;
+    grid-template-columns: 108px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .state__badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    border: var(--border-hair) solid var(--line-200);
+    background: var(--surface-100);
+    color: var(--ink-700);
+    font-size: 12.5px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .state__badge--accent {
+    border-color: var(--navy-700);
+    background: var(--navy-700);
+    color: var(--surface-000);
+  }
+  .state__badge--warn {
+    border-color: var(--brand-green);
+    color: var(--brand-green);
+    background: var(--surface-card);
+  }
+  .order {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .order__item {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
+  }
+  .order__n {
+    font-family: var(--font-serif);
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--navy-700);
+  }
+
+  /* LINE */
+  .line-box {
+    display: grid;
+    gap: var(--space-5);
+    padding: 24px;
+    border: var(--border-hair) solid var(--line-200);
+    border-top: var(--border-accent) solid var(--line-official);
+    border-radius: var(--radius-md);
+    background: var(--surface-card);
+  }
+  .line-points {
+    display: grid;
+    gap: 12px;
+  }
+  .line-points li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .line-points__k {
+    font-weight: 700;
+    color: var(--ink-900);
+  }
+  .line-box__action {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* アクセス */
+  .access {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .map {
+    width: 100%;
+    height: 260px;
+    border-radius: var(--radius-md);
+  }
+  .access__text {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .access__text .btn {
+    align-self: flex-start;
+  }
+
+  @media (min-width: 768px) {
+    .hours-grid {
+      grid-template-columns: 1.4fr 1fr;
+      align-items: start;
+    }
+    .cards-2 {
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .flow {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+    .flow__step {
+      padding: 20px 16px;
+      border-bottom: 0;
+      border-right: var(--border-hair) solid var(--line-100);
+    }
+    .flow__step:first-child {
+      padding-left: 0;
+    }
+    .flow__step:last-child {
+      padding-right: 0;
+      border-right: 0;
+    }
+    .def {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+    }
+    /* アクセス欄は幅が狭いので縦積みのまま */
+    .access .def {
+      display: flex;
+      gap: 4px;
+    }
+    .line-box {
+      grid-template-columns: 1.4fr 1fr;
+      align-items: center;
+    }
+    .map {
+      height: 320px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .two-col {
+      grid-template-columns: 1fr 1fr;
+    }
+    .access {
+      grid-template-columns: 1.2fr 1fr;
+      align-items: start;
+    }
+  }
+</style>

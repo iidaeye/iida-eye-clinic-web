@@ -3,7 +3,8 @@
 /clinic/          /clinic        301
 /medical/         /medical       301
 /facilities/      /clinic/facilities  301
-/access/          /access        301
+/access/          /visit#access  301
+/access           /visit#access  301
 /recruit/         /recruit       301
 /category/news/   /news          301
 /category/news/*  /news          301

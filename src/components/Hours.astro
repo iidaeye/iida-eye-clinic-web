@@ -43,6 +43,8 @@ const mark = (v: string) => {
     ))}
   </div>
   <p class="caption">
+    {locale === 'ja' ? '診療' : 'Consultation'} {h.consultation.map((r) => r.time).join(' / ')}
+    <span class="sep" aria-hidden="true">・</span>
     {locale === 'ja' ? '受付' : 'Reception'} {h.reception.map((r) => r.time).join(' / ')}<br />
     {locale === 'ja' ? h.closedNote : h.closedNoteEn}
   </p>
