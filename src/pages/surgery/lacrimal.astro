@@ -1,0 +1,360 @@
+---
+/**
+ * 涙道手術 (/surgery/lacrimal)
+ * 「なみだ目」で検索して来る方向け。術式の説明と限界を書き、成功率などの数値・断定は書かない (医療広告ガイドライン)。
+ * 事実は docs/content-notes.md の聞き取りに基づく。[要確認] は確定後に差し替える。
+ */
+import Page from '@/layouts/Page.astro';
+import { clinic } from '@/lib/site';
+
+const surgeon = clinic.doctors.find((d) => d.slug === 'yuko')!;
+
+const toc = [
+  { href: '#symptoms', label: 'こんな症状はありませんか' },
+  { href: '#exam', label: '検査' },
+  { href: '#flow', label: '治療の流れ' },
+  { href: '#tube', label: '涙管チューブ挿入術' },
+  { href: '#dcr', label: '涙嚢鼻腔吻合術が必要な場合' },
+  { href: '#doctor', label: '担当医' },
+  { href: '#faq', label: 'よくあるご質問' },
+];
+
+const symptoms = [
+  '涙があふれて、ハンカチが手放せない',
+  '風にあたると涙が出る、涙で視界がにじむ',
+  '目やにが続く、朝まぶたがくっつく',
+  '目頭を押すと膿のようなものが出る',
+  '目頭が腫れて痛む(涙嚢炎)',
+];
+
+const targets = [
+  { name: '鼻涙管閉塞', text: '涙嚢から鼻へ抜ける管(鼻涙管)が詰まるもの。成人のなみだ目で最も多い原因です。' },
+  { name: '涙小管閉塞', text: '涙点から涙嚢までの細い管(涙小管)が詰まるもの。点眼薬の長期使用や炎症のあとに起こることがあります。' },
+  { name: '涙点閉塞', text: '涙の入り口(涙点)が狭くなる、または閉じてしまうもの。' },
+];
+
+const flow = [
+  { n: '01', title: '診察・涙道内視鏡検査', text: '外来で涙道内視鏡を用い、閉塞や狭窄の部位と状態を直接確認します。', where: '当院' },
+  { n: '02', title: '涙管チューブ挿入術', text: '月曜日の午後に、局所麻酔・日帰りで行います。片側15〜30分程度です。', where: '当院' },
+  { n: '03', title: 'チューブ留置(約3か月)', text: '通り道が再び狭くならないよう、細いシリコンチューブを約3か月留置します。期間中は定期的に通院していただきます。', where: '当院' },
+  { n: '04', title: 'チューブ抜去・経過観察', text: '外来でチューブを抜き、涙の通りを確認します。その後も経過を診ます。', where: '当院' },
+];
+
+const tubeDetails = [
+  { k: '手術日', v: '月曜日の午後。通常の外来とは別枠で行います。' },
+  { k: '麻酔', v: '局所麻酔です。目頭の神経の麻酔(滑車下神経ブロック)、涙道内の麻酔、鼻の中の麻酔スプレーを組み合わせ、手術中の痛みを抑えます。' },
+  { k: '手術時間', v: '片側15〜30分程度。両側の場合は同日に行うこともあります。[要確認: 両側同日の可否]' },
+  { k: '留置期間', v: '通常約3か月です。状態により前後します。' },
+  { k: '術後の通院', v: '翌日と1週間後に経過を確認し、その後はチューブを抜くまで月1回程度通院していただきます。' },
+  { k: '留置中の生活', v: '目をこすったり、目頭を強く押したりしないでください。洗顔・入浴は翌日から可能です。処方した点眼薬は指示どおりにお使いください。' },
+  { k: '費用', v: '保険診療です。自己負担額は負担割合により異なり、診察時に目安をお伝えします。' },
+];
+
+const faq = [
+  { q: '手術は痛いですか?', a: '局所麻酔を十分に行うため、手術中に強い痛みを感じることはほとんどありません。麻酔の注射時や、鼻の中にチューブを通すときに圧迫感や違和感があることはあります。' },
+  { q: 'チューブは目立ちますか?', a: '目頭の涙点に細いチューブの一部が見えますが、ごく小さいため近くで見ないと分かりません。' },
+  { q: 'チューブを入れていれば必ず治りますか?', a: '多くの方で涙の症状が軽くなりますが、閉塞の部位や程度によってはチューブ挿入術では改善が不十分な場合や、抜去後に再び狭くなる場合があります。その際は涙嚢鼻腔吻合術をご提案します。' },
+  { q: '子どものなみだ目も診てもらえますか?', a: '小児の先天性鼻涙管閉塞に対する処置(涙道ブジーなど)は当院では行っていません。診察のうえ、適切な医療機関をご紹介します。' },
+  { q: '仕事はいつから再開できますか?', a: '多くの方は翌日から通常の生活に戻れます。目に負担のかかる作業や激しい運動については、診察時にご相談ください。' },
+];
+---
+
+<Page
+  title="涙道手術(なみだ目の治療)"
+  description="イイダ眼科医院の涙道手術。鼻涙管閉塞・涙小管閉塞・涙点閉塞による「なみだ目」に対し、涙道内視鏡検査のうえ涙管チューブ挿入術を月曜午後に局所麻酔・日帰りで行います。涙嚢鼻腔吻合術が必要な場合は静岡県立総合病院と合同で手術します。"
+  eyebrow="LACRIMAL SURGERY"
+  lead="涙があふれる、目やにが続く。その原因が涙の通り道(涙道)の詰まりであれば、手術で改善が期待できます。涙道内視鏡で状態を確かめ、多くの場合は涙管チューブ挿入術を日帰りで行います。"
+  crumbs={[{ href: '/medical', label: '診療案内' }, { href: '/surgery', label: '手術のご案内' }, { label: '涙道手術' }]}
+  toc={toc}
+  cta={{ title: 'なみだ目のご相談は、まず外来の診察で', text: '手術が必要かどうかは、診察と涙道内視鏡検査のうえで判断します。受付方法は「受診案内」をご覧ください。' }}
+>
+  <section id="symptoms">
+    <h2 class="heading">こんな症状はありませんか<span class="sub">SYMPTOMS</span></h2>
+    <div class="two-col">
+      <ul class="rule-list checks">
+        {symptoms.map((s) => <li>{s}</li>)}
+      </ul>
+      <div class="prose-block">
+        <p>涙は目の表面を潤したあと、目頭にある涙点から涙小管・涙嚢・鼻涙管を通って鼻へ流れます。この通り道のどこかが詰まったり狭くなったりすると、涙が行き場を失って目からあふれます。これが「なみだ目(流涙症)」です。</p>
+        <p>涙道が詰まったままだと、涙嚢に細菌がたまって涙嚢炎を起こすことがあります。なみだ目が続く方は、一度ご相談ください。</p>
+      </div>
+    </div>
+    <div class="targets">
+      <p class="heading-sm">当院で治療する涙道の病気</p>
+      <dl class="rule-list defs">
+        {targets.map((t) => (
+          <div class="def">
+            <dt class="title">{t.name}</dt>
+            <dd class="small">{t.text}</dd>
+          </div>
+        ))}
+      </dl>
+      <p class="caption">小児の先天性鼻涙管閉塞は当院では扱っていません。診察のうえ適切な医療機関をご紹介します。</p>
+    </div>
+  </section>
+
+  <section id="exam">
+    <h2 class="heading">検査<span class="sub">EXAMINATION</span></h2>
+    <div class="two-col">
+      <div class="prose-block">
+        <p><strong>涙道内視鏡検査</strong>を外来で行います。直径1mmほどの細い内視鏡を涙点から入れ、涙道の内側を画面で直接観察します。どこが、どのように詰まっているかが分かるため、チューブ挿入術で対応できるか、涙嚢鼻腔吻合術が必要かを判断できます。</p>
+        <p>涙道に水を通して流れを調べる通水検査もあわせて行います。</p>
+      </div>
+      <img class="figure" src="/images/placeholder-interior.svg" alt="涙道内視鏡検査の様子" width="640" height="420" loading="lazy" />
+    </div>
+  </section>
+
+  <section id="flow">
+    <h2 class="heading">治療の流れ<span class="sub">FLOW</span></h2>
+    <ol class="steps">
+      {flow.map((s) => (
+        <li class="step">
+          <span class="step__n">{s.n}</span>
+          <p class="title">{s.title}</p>
+          <p class="small">{s.text}</p>
+          <span class="step__where">{s.where}</span>
+        </li>
+      ))}
+    </ol>
+    <div class="branch">
+      <p class="small"><strong>チューブ挿入術で改善が見込めない場合、または抜去後に再び閉塞した場合</strong>は、涙嚢と鼻の間に新しい通り道を作る「涙嚢鼻腔吻合術」をご提案します。<a href="#dcr">詳しくはこちら</a></p>
+    </div>
+  </section>
+
+  <section id="tube">
+    <h2 class="heading">涙管チューブ挿入術<span class="sub">LACRIMAL INTUBATION</span></h2>
+    <p>涙道内視鏡で詰まりの部位を確認しながら通り道を開き、細いシリコン製のチューブを涙道に通して留置します。通り道が再び狭くならないよう支えとして置くもので、約3か月後に外来で抜きます。</p>
+    <dl class="rule-list defs">
+      {tubeDetails.map((d) => (
+        <div class="def">
+          <dt class="title">{d.k}</dt>
+          <dd class="small">{d.v}</dd>
+        </div>
+      ))}
+    </dl>
+    <div class="note">
+      <p class="title">この手術の限界について</p>
+      <p class="small">閉塞の部位や期間、炎症の程度によっては、チューブ挿入術では十分に改善しない場合や、抜去後に再び狭くなる場合があります。その可能性と、次の選択肢(涙嚢鼻腔吻合術)についても手術前にご説明します。</p>
+    </div>
+  </section>
+
+  <section id="dcr">
+    <h2 class="heading">涙嚢鼻腔吻合術が必要な場合<span class="sub">DCR</span></h2>
+    <div class="two-col">
+      <div class="prose-block">
+        <p>涙嚢と鼻腔の間の骨に小さな窓を開け、涙の新しい通り道を作る手術です。チューブ挿入術で対応できない閉塞に対して行います。</p>
+        <p>この手術が必要な場合は<strong>静岡県立総合病院</strong>へご紹介し、同院の<strong>眼科涙道外来(飯田裕子医師)と耳鼻咽喉科の合同</strong>で手術を行います。当院で診察・検査を担当した医師が県立総合病院でも手術を担当するため、説明から手術、術後の経過まで同じ医師が診ます。</p>
+        <p class="small muted">[要確認: 県立総合病院での入院の有無・日数、術後の当院での経過観察]</p>
+      </div>
+      <div class="card card--accent dcr-card">
+        <p class="eyebrow">連携</p>
+        <p class="title">静岡県立総合病院 眼科涙道外来</p>
+        <p class="small">涙道外来を飯田裕子医師が担当。耳鼻咽喉科と合同で涙嚢鼻腔吻合術を行います。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="doctor">
+    <h2 class="heading">担当医<span class="sub">SURGEON</span></h2>
+    <div class="surgeon">
+      <img class="surgeon__photo" src="/images/doctor-placeholder.svg" alt={`${surgeon.name} 診療風景`} width="320" height="220" loading="lazy" />
+      <div class="surgeon__body">
+        <p class="eyebrow">{surgeon.role}</p>
+        <p class="surgeon__name">{surgeon.name}</p>
+        <p class="small muted">{surgeon.title}</p>
+        <ul class="rule-list small">
+          {surgeon.qualifications.map((q) => <li>{q}</li>)}
+        </ul>
+        <a class="btn" href={`/clinic/doctors#${surgeon.slug}`}>経歴を見る</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <h2 class="heading">よくあるご質問<span class="sub">FAQ</span></h2>
+    <dl class="rule-list">
+      {faq.map((f) => (
+        <div class="faq">
+          <dt class="title">{f.q}</dt>
+          <dd class="small">{f.a}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+</Page>
+
+<style>
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    scroll-margin-top: 80px;
+  }
+  .small {
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  dd {
+    margin: 0;
+  }
+  .two-col {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .prose-block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .checks li {
+    position: relative;
+    padding-left: 28px;
+    font-weight: 500;
+  }
+  .checks li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 14px;
+    width: 12px;
+    height: 12px;
+    border: var(--border-hair) solid var(--navy-700);
+    border-radius: 3px;
+  }
+  .targets {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .def,
+  .faq {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .figure {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    background: var(--surface-100);
+  }
+
+  /* 流れ */
+  .steps {
+    display: grid;
+    border-top: var(--border-rule) solid var(--line-strong);
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 0;
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .step:last-child {
+    border-bottom: 0;
+  }
+  .step__n {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--navy-700);
+  }
+  .step__where {
+    align-self: flex-start;
+    padding: 2px 8px;
+    border: var(--border-hair) solid var(--line-200);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--ink-500);
+  }
+  .branch {
+    padding: 16px 20px;
+    border: var(--border-hair) solid var(--line-200);
+    border-left: var(--border-accent) solid var(--brand-green);
+    border-radius: var(--radius-sm);
+    background: var(--surface-card);
+  }
+  .note {
+    padding: 18px 20px;
+    border: var(--border-hair) solid var(--line-200);
+    border-radius: var(--radius-sm);
+    background: var(--surface-card);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .dcr-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-self: start;
+  }
+
+  /* 担当医 */
+  .surgeon {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .surgeon__photo {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    aspect-ratio: 16 / 11;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    background: var(--surface-100);
+  }
+  .surgeon__body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .surgeon__name {
+    font-family: var(--font-serif);
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--ink-900);
+  }
+  .surgeon__body .btn {
+    align-self: flex-start;
+    margin-top: 6px;
+  }
+
+  @media (min-width: 768px) {
+    .two-col {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+    .def {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+    }
+    .steps {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .step {
+      padding: 24px 20px;
+      border-bottom: 0;
+      border-right: var(--border-hair) solid var(--line-100);
+    }
+    .step:first-child {
+      padding-left: 0;
+    }
+    .step:last-child {
+      padding-right: 0;
+      border-right: 0;
+    }
+    .surgeon {
+      grid-template-columns: 320px 1fr;
+      gap: var(--space-6);
+      align-items: start;
+    }
+  }
+</style>
