@@ -4,6 +4,11 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "iida-eye-clinic-web",
   "compatibility_date": "2026-10-11",
+  // 仮URL (https://iida-eye-clinic-web.<account>.workers.dev) を常に有効にする。
+  // 本番ドメイン切替後も検証用に残す
+  "workers_dev": true,
+  // main 以外のブランチのプレビューURL
+  "preview_urls": true,
   "assets": {
     "directory": "./dist",
     // /news のような拡張子なしURLに news.html を返す (astro.config の build.format: 'file' と対応)
