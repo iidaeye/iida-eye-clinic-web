@@ -1,0 +1,502 @@
+---
+/**
+ * 緑内障手術 (/surgery/glaucoma)
+ * 術式は MIGS (iStent・Hydrus・流出路再建術(眼内法)) と濾過手術 (プリザーフロマイクロシャント・線維柱帯切除術) (2026-10-13 聞き取り)。
+ * 眼圧を下げる手術の説明と限界を書き、成功率や眼圧下降幅などの数値・断定は書かない (医療広告ガイドライン)。
+ * 事実は src/data/clinic.json の surgeries と docs/content-notes.md に基づく。[要確認] は確定後に差し替える。
+ */
+import Page from '@/layouts/Page.astro';
+import { clinic } from '@/lib/site';
+
+const surgeon = clinic.doctors.find((d) => d.slug === 'yuto')!;
+const summary = clinic.surgeries.find((s) => s.slug === 'glaucoma')!;
+
+const toc = [
+  { href: '#about', label: '緑内障とは' },
+  { href: '#when', label: '手術を検討するとき' },
+  { href: '#procedures', label: '当院で行う手術' },
+  { href: '#details', label: '手術について' },
+  { href: '#flow', label: '治療の流れ' },
+  { href: '#choose', label: '術式の選び方' },
+  { href: '#doctor', label: '担当医' },
+  { href: '#faq', label: 'よくあるご質問' },
+];
+
+const triggers = [
+  '点眼薬を続けていても、眼圧が目標まで下がらない',
+  '点眼薬の種類が増え、充血やかぶれなどの副作用で続けにくい',
+  '点眼を忘れがちで、眼圧が安定しない',
+  '視野の障害が進んでいる',
+  '白内障の手術を予定していて、緑内障もあわせて治療したい',
+];
+
+const procedures = [
+  {
+    group: 'migs',
+    name: '眼内ドレーン(iStent・Hydrus)',
+    sub: 'MICROSTENT',
+    text: '房水の本来の排水路(シュレム管)に、ごく小さな金属製のステントを留置して房水の通り道を作る手術です。iStentは線維柱帯に長さ1mmに満たないステントを、Hydrusはシュレム管の中に長さ8mmほどのステントを留置します。いずれも白内障手術と同時に行うことが条件で、白内障手術の切開から同じ流れで挿入します。結膜を切らないため、将来ほかの手術が必要になった場合にも影響が少ない方法です。',
+    target: '白内障手術を受ける方のうち、軽度から中等度の開放隅角緑内障で点眼治療中の方。[要確認: 当院で対象とする病型、iStentとHydrusの使い分け]',
+    limit: '眼圧を下げる効果はおだやかで、点眼薬を減らすことを目的とした手術です。効果が不十分な場合は点眼を続けるか、ほかの手術を検討します。進行した緑内障や隅角が狭い方には適しません。術後に眼の中に少量の出血が出て、数日かすむことがあります。',
+    note: '[要確認: 使用する機種(iStent inject W など)]',
+  },
+  {
+    group: 'migs',
+    name: '流出路再建術(眼内法)',
+    sub: 'TRABECULOTOMY AB INTERNO',
+    text: '房水の出口にある線維柱帯を、眼の内側から切り開く手術です。角膜の縁の小さな切開から細い器具を入れ、シュレム管へ房水が流れやすくします。白内障手術と同時に行うことも、単独で行うこともできます。結膜を切らないため、将来ほかの手術が必要になった場合にも影響が少ない方法です。',
+    target: '主に開放隅角緑内障(原発開放隅角緑内障、落屑緑内障など)。[要確認: 当院で対象とする病型]',
+    limit: '術後に眼の中に少量の出血(前房出血)が出て、数日から数週間かすんで見えることがあります。眼圧が一時的に上がることもあります。眼圧を下げる幅には限りがあり、濾過手術のような大きな眼圧下降は期待できません。',
+    note: '[要確認: 使用する器具(マイクロフック、カフークデュアルブレードなど)]',
+  },
+  {
+    group: 'filter',
+    name: 'プリザーフロ マイクロシャント',
+    sub: 'PRESERFLO MICROSHUNT',
+    text: '長さ8.5mmほどの細い管を眼の中から結膜の下へ通し、房水を結膜の下に逃がして眼圧を下げる手術です。結膜を切開して行い、管の周りが癒着して詰まらないよう、細胞の増殖を抑える薬(マイトマイシンC)を併用します。線維柱帯切除術と同じ「濾過手術」の仲間で、手順が定型化されているぶん術後の調整が少ないのが特徴です。',
+    target: '点眼や眼内の手術では眼圧が十分に下がらない開放隅角緑内障の方。[要確認: 当院で対象とする病型、白内障同時手術の可否]',
+    limit: '術後早期に眼圧が下がりすぎる(低眼圧)ことや、結膜の下にできる房水のたまり(濾過胞)が時間とともに癒着して効果が弱まることがあります。濾過胞は長期にわたり感染の入り口になりうるため、術後も定期的な診察が欠かせません。効果が弱まった場合は再手術を検討します。',
+    note: '[要確認: マイトマイシンCの使用、術後の通院頻度]',
+  },
+  {
+    group: 'filter',
+    name: '線維柱帯切除術',
+    sub: 'TRABECULECTOMY',
+    text: '白目の壁(強膜)に小さな窓を作り、房水を結膜の下に逃がす通り道を作る手術です。濾過手術の中で最も長く行われている方法で、大きな眼圧下降が期待できます。プリザーフロと同様に、マイトマイシンCを併用します。',
+    target: '進行した緑内障や、大きな眼圧下降が必要な方。ほかの手術で眼圧が下がらなかった方。[要確認: 当院で対象とする病型]',
+    limit: '術後の眼圧は、窓を閉じている糸の調整(レーザー切糸)や濾過胞の処置で整えるため、術後早期は頻回の通院が必要です。低眼圧、前房出血、濾過胞の感染などの合併症があり、効果が時間とともに弱まることもあります。術後しばらくは見え方が不安定になります。',
+    note: '[要確認: 術後早期の通院間隔、日帰りで行うか]',
+  },
+];
+
+const groups = [
+  {
+    id: 'migs',
+    name: '低侵襲緑内障手術(MIGS)',
+    sub: 'MINIMALLY INVASIVE GLAUCOMA SURGERY',
+    text: '結膜を切らずに、角膜の縁の小さな切開から眼の内側で行う手術の総称です。眼への負担が小さく回復が早い一方、眼圧を下げる幅はおだやかで、点眼薬を減らすことを主な目的とします。白内障手術と同時に行うことが多い手術です。',
+  },
+  {
+    id: 'filter',
+    name: '濾過手術',
+    sub: 'FILTERING SURGERY',
+    text: '結膜を切開し、房水を結膜の下へ逃がす通り道を作る手術です。大きな眼圧下降が期待できる一方、術後の管理に時間がかかり、合併症の種類も増えます。',
+  },
+];
+
+const details = [
+  { k: '手術日', v: '水曜日。白内障・硝子体手術と同じ手術日に行います。' },
+  { k: '麻酔', v: '局所麻酔です。強い痛みを感じることはほとんどありません。[要確認: 点眼麻酔・テノン嚢下麻酔など具体的な方法]' },
+  { k: '手術時間', v: '[要確認: 単独の場合、白内障手術と同時の場合それぞれの所要時間]' },
+  { k: '入院', v: '日帰りです。手術の約2時間前にご来院いただき、術後は回復室で15分ほど安静にしてからご帰宅いただきます。当日の運転はできません。[要確認: 線維柱帯切除術・プリザーフロも日帰りか]' },
+  { k: '両眼の場合', v: '[要確認: 両眼同日の可否、片目ずつ行う場合の間隔]' },
+  { k: '術後の通院', v: '翌日・1週間後・1か月後を目安に、眼圧と眼の状態を確認します。濾過手術(プリザーフロ・線維柱帯切除術)では、眼圧を整えるため術後早期はより頻回に通院していただきます。緑内障の治療は手術後も続きますので、その後も定期的に通院していただきます。[要確認: 術式ごとの通院間隔]' },
+  { k: '服薬について', v: '抗凝固薬(血液をさらさらにする薬)を服用中の方は、術式によっては休薬が必要な場合があります。該当する方には事前に個別にお伝えします。[要確認: 術式ごとの休薬方針]' },
+  { k: '費用', v: '保険診療です。眼内ドレーンを含め、いずれの術式も保険が適用されます。自己負担額は術式と負担割合により異なり、診察時に目安をお伝えします。' },
+];
+
+const flow = [
+  { n: '01', title: '診察・検査', text: '眼圧、視野、OCT(網膜の神経の厚み)、隅角などを調べ、進行の程度と手術の適応、適した術式を判断します。', where: '当院' },
+  { n: '02', title: '説明と同意', text: '執刀医が手術の内容、期待できる効果と限界、起こりうる合併症をご説明し、同意のうえで日程を決めます。', where: '当院' },
+  { n: '03', title: '手術(水曜)', text: '局所麻酔で行います。白内障がある方は同時に白内障手術を行うことがあります(眼内ドレーンは白内障手術との同時施行が条件です)。', where: '当院' },
+  { n: '04', title: '術後の通院・点眼の調整', text: '眼圧の経過を見ながら、濾過胞の処置や点眼薬の調整を行います。手術後も緑内障の定期検査は続けます。', where: '当院' },
+];
+
+const faq = [
+  { q: '手術をすれば視野は元に戻りますか?', a: '戻りません。緑内障で一度失われた視野を回復させる治療はなく、手術の目的は眼圧を下げて進行を抑えることです。そのため、視野が大きく損なわれる前に治療することが大切です。' },
+  { q: '手術をすれば点眼薬はやめられますか?', a: '点眼薬を減らせることはありますが、必ずやめられるとは限りません。術後の眼圧を見ながら、必要な点眼は続けていただきます。' },
+  { q: '手術は痛いですか?', a: '局所麻酔を行うため、手術中に強い痛みを感じることはほとんどありません。手術中は顕微鏡の光がまぶしく感じられます。' },
+  { q: '白内障の手術と同時にできますか?', a: 'はい。白内障がある方では、同じ日に緑内障手術を行うことがあります。眼内ドレーン(iStent・Hydrus)は白内障手術と同時に行うことが条件の手術です。[要確認: プリザーフロ・線維柱帯切除術と白内障の同時手術の可否]' },
+  { q: '手術の後、すぐによく見えるようになりますか?', a: '緑内障手術は見え方を良くする手術ではありません。濾過手術では、術後しばらく眼圧が不安定で、かすみや見えにくさが数週間続くことがあります。回復の経過には個人差があります。' },
+  { q: '他院で緑内障の治療中ですが、手術の相談はできますか?', a: 'はい。紹介状(診療情報提供書)とこれまでの検査結果をお持ちのうえ、まず通常の外来を受診してください。紹介状がある方は初診の時間予約もできます。' },
+];
+---
+
+<Page
+  title="緑内障手術"
+  description="イイダ眼科医院の緑内障手術。点眼で眼圧が下がりきらない方に、低侵襲緑内障手術(MIGS: iStent・Hydrus・流出路再建術)と濾過手術(プリザーフロマイクロシャント・線維柱帯切除術)を水曜日に局所麻酔で行います。病状に応じて術式を選び、白内障手術と同時に行うこともあります。手術の限界、治療の流れ、術後の通院。"
+  eyebrow="GLAUCOMA SURGERY"
+  lead={summary.lead}
+  crumbs={[{ href: '/medical', label: '診療案内' }, { href: '/surgery', label: '手術のご案内' }, { label: '緑内障手術' }]}
+  toc={toc}
+  cta={{ title: '緑内障の手術のご相談は、まず外来の診察で', text: '手術の要否や術式の選択は、眼圧・視野・隅角などの検査のうえで判断します。受付方法は「受診案内」をご覧ください。' }}
+>
+  <section id="about">
+    <h2 class="heading">緑内障とは<span class="sub">ABOUT</span></h2>
+    <div class="two-col">
+      <div class="prose-block">
+        <p>目の奥で光を感じ取る神経(視神経)が少しずつ傷み、見える範囲(視野)が狭くなっていく病気です。多くは自覚症状がないまま進行し、片目の視野が欠けてももう片方の目が補うため、気づいたときには進んでいることがあります。</p>
+        <p>傷んだ視神経と失われた視野は元に戻りません。そのため治療の目的は、眼の中の圧力(眼圧)を下げて進行を抑えることにあります。まず点眼薬で眼圧を下げ、それでも不十分な場合にレーザーや手術を検討します。</p>
+      </div>
+      <img class="figure" src="/images/placeholder-interior.svg" alt="房水の流れと眼圧の図解" width="640" height="420" loading="lazy" />
+    </div>
+  </section>
+
+  <section id="when">
+    <h2 class="heading">手術を検討するとき<span class="sub">WHEN TO CONSIDER</span></h2>
+    <div class="two-col">
+      <ul class="rule-list checks">
+        {triggers.map((t) => <li>{t}</li>)}
+      </ul>
+      <div class="prose-block">
+        <p>緑内障の手術は、点眼薬だけでは眼圧を十分に下げられない場合や、点眼を続けることが難しい場合に検討します。病気の進み具合、年齢、目の状態、白内障の有無などをあわせて、手術の要否と術式をご相談します。</p>
+        <p>手術で眼圧が下がっても緑内障が治るわけではなく、その後も定期的な検査と、必要に応じた点眼の継続が必要です。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="procedures">
+    <h2 class="heading">当院で行う手術<span class="sub">PROCEDURES</span></h2>
+    <p>いずれも房水(眼の中を満たす液体)の流れ出る道を作って眼圧を下げる手術です。眼の内側から行う低侵襲緑内障手術(MIGS)と、結膜の下に房水を逃がす濾過手術があり、病状に応じて使い分けます。</p>
+    {groups.map((g) => (
+      <div class="group">
+        <div class="group__head">
+          <p class="eyebrow">{g.sub}</p>
+          <p class="group__name">{g.name}</p>
+          <p class="small">{g.text}</p>
+        </div>
+        <div class="procedures">
+          {procedures.filter((p) => p.group === g.id).map((p) => (
+        <div class="procedure">
+          <div class="procedure__head">
+            <p class="eyebrow">{p.sub}</p>
+            <p class="procedure__name">{p.name}</p>
+          </div>
+          <p class="small">{p.text}</p>
+          <dl class="rule-list defs">
+            <div class="def">
+              <dt class="title">対象となる方</dt>
+              <dd class="small">{p.target}</dd>
+            </div>
+            <div class="def">
+              <dt class="title">限界と合併症</dt>
+              <dd class="small">{p.limit}</dd>
+            </div>
+          </dl>
+          {p.note && <p class="small muted">{p.note}</p>}
+        </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </section>
+
+  <section id="details">
+    <h2 class="heading">手術について<span class="sub">DETAILS</span></h2>
+    <dl class="rule-list defs">
+      {details.map((d) => (
+        <div class="def">
+          <dt class="title">{d.k}</dt>
+          <dd class="small">{d.v}</dd>
+        </div>
+      ))}
+    </dl>
+    <p class="small"><a href="/surgery">手術のご案内</a>に、手術までの流れと当日のご案内(来院時間・付き添い・服装)をまとめています。</p>
+  </section>
+
+  <section id="flow">
+    <h2 class="heading">治療の流れ<span class="sub">FLOW</span></h2>
+    <ol class="steps">
+      {flow.map((s) => (
+        <li class="step">
+          <span class="step__n">{s.n}</span>
+          <p class="title">{s.title}</p>
+          <p class="small">{s.text}</p>
+          <span class="step__where">{s.where}</span>
+        </li>
+      ))}
+    </ol>
+    <div class="branch">
+      <p class="small"><strong>手術で眼圧が十分に下がらない場合や、効果が時間とともに弱まった場合</strong>は、点眼の追加や、より大きな眼圧下降を目指す術式での再手術を検討します。<a href="#choose">術式の選び方はこちら</a></p>
+    </div>
+  </section>
+
+  <section id="choose">
+    <h2 class="heading">術式の選び方<span class="sub">CHOOSING</span></h2>
+    <div class="two-col">
+      <div class="prose-block">
+        <p>緑内障の進み具合、目標とする眼圧、年齢、白内障の有無、これまでの治療歴をもとに、執刀医が術式をご提案します。<strong>白内障手術を受ける方で緑内障が軽度から中等度</strong>であれば低侵襲緑内障手術(MIGS)を同時に行うことを検討し、<strong>点眼やMIGSでは眼圧が下がりきらず、大きな眼圧下降が必要</strong>な方には濾過手術(プリザーフロマイクロシャント、線維柱帯切除術)を検討します。</p>
+        <p>濾過手術は眼圧を大きく下げられる一方、術後の管理に時間がかかり、合併症の種類も増えます。その違いをご説明したうえで、ご本人と相談して決めます。</p>
+        <p class="small muted">[要確認: MIGS・濾過手術の使い分けの基準。チューブシャント手術の実施の有無、または紹介先]</p>
+        <p class="small muted">[要確認: レーザー治療(選択的レーザー線維柱帯形成術、レーザー虹彩切開術)の実施の有無]</p>
+      </div>
+      <div class="note">
+        <p class="title">手術の限界について</p>
+        <p class="small">どの術式でも、手術で得られる眼圧下降には個人差があり、時間の経過とともに効果が弱まることがあります。その場合は点眼の追加や再手術を検討します。手術前に、期待できる効果と限界、起こりうる合併症をご説明します。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="doctor">
+    <h2 class="heading">担当医<span class="sub">SURGEON</span></h2>
+    <div class="surgeon">
+      <img class="surgeon__photo" src="/images/doctor-placeholder.svg" alt={`${surgeon.name} 診療風景`} width="320" height="220" loading="lazy" />
+      <div class="surgeon__body">
+        <p class="eyebrow">{surgeon.role}</p>
+        <p class="surgeon__name">{surgeon.name}</p>
+        <p class="small muted">{surgeon.title}</p>
+        <ul class="rule-list small">
+          {surgeon.qualifications.map((q) => <li>{q}</li>)}
+        </ul>
+        <p class="small">主に{surgeon.name.replace(' ', '')}医師が執刀します。手術前の説明と術後の診察も原則として執刀医が担当します(曜日によりほかの医師が診ることがあります)。</p>
+        <a class="btn" href={`/clinic/doctors#${surgeon.slug}`}>経歴を見る</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <h2 class="heading">よくあるご質問<span class="sub">FAQ</span></h2>
+    <dl class="rule-list">
+      {faq.map((f) => (
+        <div class="faq">
+          <dt class="title">{f.q}</dt>
+          <dd class="small">{f.a}</dd>
+        </div>
+      ))}
+    </dl>
+    <div class="related">
+      <a class="card" href="/surgery">手術のご案内(流れ・当日)<span>→</span></a>
+      <a class="card" href="/surgery/cataract">白内障手術<span>→</span></a>
+      <a class="card" href={`/clinic/doctors#${surgeon.slug}`}>担当医の紹介<span>→</span></a>
+    </div>
+  </section>
+</Page>
+
+<style>
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    scroll-margin-top: 80px;
+  }
+  .small {
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  dd {
+    margin: 0;
+  }
+  .two-col {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .prose-block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .checks li {
+    position: relative;
+    padding-left: 28px;
+    font-weight: 500;
+  }
+  .checks li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 14px;
+    width: 12px;
+    height: 12px;
+    border: var(--border-hair) solid var(--navy-700);
+    border-radius: 3px;
+  }
+  .def,
+  .faq {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .figure {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    background: var(--surface-100);
+  }
+
+  /* 術式 */
+  .group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .group__head {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-bottom: 12px;
+    border-bottom: var(--border-rule) solid var(--line-strong);
+  }
+  .group__name {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink-900);
+  }
+  .procedures {
+    display: grid;
+    gap: 16px;
+  }
+  .procedure {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+    border: var(--border-hair) solid var(--line-200);
+    border-top: var(--border-accent) solid var(--brand-green);
+    border-radius: var(--radius-md);
+    background: var(--surface-card);
+  }
+  .procedure__head {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .procedure__name {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ink-900);
+  }
+  .procedure .def {
+    gap: 4px;
+  }
+
+  /* 流れ */
+  .steps {
+    display: grid;
+    border-top: var(--border-rule) solid var(--line-strong);
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 0;
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .step:last-child {
+    border-bottom: 0;
+  }
+  .step__n {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--navy-700);
+  }
+  .step__where {
+    align-self: flex-start;
+    padding: 2px 8px;
+    border: var(--border-hair) solid var(--line-200);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--ink-500);
+  }
+  .branch {
+    padding: 16px 20px;
+    border: var(--border-hair) solid var(--line-200);
+    border-left: var(--border-accent) solid var(--brand-green);
+    border-radius: var(--radius-sm);
+    background: var(--surface-card);
+  }
+  .note {
+    padding: 18px 20px;
+    border: var(--border-hair) solid var(--line-200);
+    border-radius: var(--radius-sm);
+    background: var(--surface-card);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-self: start;
+  }
+
+  /* 担当医 */
+  .surgeon {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .surgeon__photo {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    aspect-ratio: 16 / 11;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    background: var(--surface-100);
+  }
+  .surgeon__body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .surgeon__name {
+    font-family: var(--font-serif);
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--ink-900);
+  }
+  .surgeon__body .btn {
+    align-self: flex-start;
+    margin-top: 6px;
+  }
+
+  /* 関連リンク */
+  .related {
+    display: grid;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .related .card {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+    color: var(--ink-900);
+    text-decoration: none;
+  }
+
+  @media (min-width: 768px) {
+    .two-col {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+    .def {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+    }
+    .procedures {
+      grid-template-columns: 1fr 1fr;
+    }
+    .procedure .def {
+      grid-template-columns: 120px 1fr;
+    }
+    .steps {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .step {
+      padding: 24px 20px;
+      border-bottom: 0;
+      border-right: var(--border-hair) solid var(--line-100);
+    }
+    .step:first-child {
+      padding-left: 0;
+    }
+    .step:last-child {
+      padding-right: 0;
+      border-right: 0;
+    }
+    .surgeon {
+      grid-template-columns: 320px 1fr;
+      gap: var(--space-6);
+      align-items: start;
+    }
+    .related {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>
