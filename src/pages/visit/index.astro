@@ -104,7 +104,24 @@ const callOrder = [
       </div>
     </div>
     <div class="kiosk-guide">
-      <p class="title">セルフ受付機の画面</p>
+      <p class="title">セルフ受付機の使い方</p>
+      <figure class="kiosk-photo">
+        <div class="kiosk-photo__frame">
+          <img src="/images/visit/kiosk-photo.jpg" alt="セルフ受付機。画面の右下に読み取り機、左に受付票のプリンターがある" width="1000" height="1047" loading="lazy" />
+          <span class="pin" style="left: 50%; top: 38%"><b>1</b></span>
+          <span class="pin" style="left: 79%; top: 71%"><b>2</b></span>
+          <span class="pin" style="left: 19%; top: 72%"><b>3</b></span>
+        </div>
+        <figcaption>
+          <ol class="pin-legend">
+            <li><b>1</b><span>画面の案内に従ってタッチします</span></li>
+            <li><b>2</b><span><strong>読み取り機</strong>はここ。診察券・予約票のQRコードを下に向けてかざします</span></li>
+            <li><b>3</b><span><strong>受付票</strong>はここから出ます</span></li>
+          </ol>
+          <p class="kiosk-photo__warn">受付票を受け取るまで、受付は完了していません。QRコードを読み取ったあとも、画面の案内に従って最後までお進みください。</p>
+        </figcaption>
+      </figure>
+      <p class="title">画面の流れ</p>
       <ol class="screens">
         {kioskSteps.map((k, i) => (
           <li class="screen">
@@ -326,6 +343,66 @@ const callOrder = [
     flex-direction: column;
     gap: 12px;
   }
+  .kiosk-photo {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+  }
+  .kiosk-photo__frame {
+    position: relative;
+  }
+  .kiosk-photo__frame img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+  }
+  .pin,
+  .pin-legend b {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--navy-700);
+    color: var(--surface-000);
+    font-size: 15px;
+    font-weight: 700;
+    font-style: normal;
+  }
+  .pin {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    border: 2px solid var(--surface-000);
+  }
+  .pin-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pin-legend li {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 10px;
+    align-items: center;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .pin-legend b {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+  .kiosk-photo__warn {
+    padding: 12px 14px;
+    border: var(--border-hair) solid var(--alert-700);
+    border-radius: var(--radius-sm);
+    color: var(--alert-700);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.7;
+  }
   .screens {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -541,6 +618,11 @@ const callOrder = [
     .screens {
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 16px;
+    }
+    .kiosk-photo {
+      grid-template-columns: 1.1fr 1fr;
+      align-items: center;
+      gap: var(--space-5);
     }
     .flow {
       grid-template-columns: repeat(6, minmax(0, 1fr));
