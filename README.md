@@ -52,14 +52,16 @@ docs/                     連携仕様
 
 医院情報 (電話・住所・診療時間) はページに直書きせず `src/data/clinic.json` から参照する。
 
-## デプロイ (Cloudflare Pages)
+## デプロイ (Cloudflare Workers 静的アセット)
 
-1. Cloudflare ダッシュボード → Workers & Pages → Create → Pages → Connect to Git → このリポジトリ
-2. Build settings: Framework preset **Astro**、Build command `pnpm build`、Output directory `dist`
-3. Environment variables: `NODE_VERSION=22`、`PUBLIC_STATUS_API_URL`、`PUBLIC_CALENDAR_API_URL`、`PUBLIC_CF_ANALYTICS_TOKEN` (任意)
-4. まず `*.pages.dev` の仮URLで確認。DNS の引き継ぎ完了後に Custom domain で `iida-eye-clinic.jp` を追加 (apex は CNAME flattening のため DNS を Cloudflare に置く)
+Cloudflare は Pages を Workers に統合しているため、Workers の静的アセット配信を使う。設定は `wrangler.jsonc` (配信フォルダ `dist/`、404ページ、URLの扱い)。
 
-main 以外のブランチへの push はプレビューURLが発行される。
+1. Cloudflare ダッシュボード → Workers & Pages → Create → Import a repository → このリポジトリ
+2. Build command `pnpm run build`、Deploy command `npx wrangler deploy` (既定のまま)
+3. Advanced settings → Build variables に `PUBLIC_STATUS_API_URL`、`PUBLIC_CALENDAR_API_URL`、`PUBLIC_CF_ANALYTICS_TOKEN` (任意)。Node は `.node-version` (22) が使われる
+4. まず `iida-eye-clinic-web.<account>.workers.dev` の仮URLで確認。DNS の引き継ぎ完了後に Custom domain で `iida-eye-clinic.jp` を追加
+
+main 以外のブランチへの push はプレビューURLが発行される (Enable Preview builds)。手元から `pnpm exec wrangler deploy --dry-run` で設定を検証できる。
 
 ## 公開前チェック
 

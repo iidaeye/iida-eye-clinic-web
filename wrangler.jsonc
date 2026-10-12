@@ -1,0 +1,16 @@
+{
+  // Cloudflare Workers (静的アセット配信) の設定
+  // Worker スクリプトは持たず、Astro が生成した dist/ をそのまま配信する
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "iida-eye-clinic-web",
+  "compatibility_date": "2026-10-11",
+  "assets": {
+    "directory": "./dist",
+    // /news のような拡張子なしURLに news.html を返す (astro.config の build.format: 'file' と対応)
+    "html_handling": "auto-trailing-slash",
+    // 該当ファイルがない場合は dist/404.html を 404 ステータスで返す
+    "not_found_handling": "404-page"
+  },
+  // ビルドログやリクエストの観測 (無料枠内)
+  "observability": { "enabled": true }
+}
