@@ -285,24 +285,12 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     background: var(--cal-closed-bg);
     color: var(--cal-closed-ink);
   }
-  /* 半日休診: 左上=午前、右下=午後。斜線で区切り、休診側だけ塗る */
+  /* 半日休診: 左上=午前、右下=午後。対角線は引かず、休診側の三角だけ塗る */
   .calendar__grid :global(.calendar__day.is-pm-closed) {
-    background: linear-gradient(
-      to bottom right,
-      transparent calc(50% - 0.5px),
-      var(--line-100) calc(50% - 0.5px),
-      var(--line-100) calc(50% + 0.5px),
-      var(--cal-pm-bg) calc(50% + 0.5px)
-    );
+    background: linear-gradient(to bottom right, transparent 50%, var(--cal-pm-bg) 50%);
   }
   .calendar__grid :global(.calendar__day.is-am-closed) {
-    background: linear-gradient(
-      to bottom right,
-      var(--cal-am-bg) calc(50% - 0.5px),
-      var(--line-100) calc(50% - 0.5px),
-      var(--line-100) calc(50% + 0.5px),
-      transparent calc(50% + 0.5px)
-    );
+    background: linear-gradient(to bottom right, var(--cal-am-bg) 50%, transparent 50%);
   }
   .calendar__grid :global(.calendar__day.is-note) {
     background: var(--cal-special-bg);
