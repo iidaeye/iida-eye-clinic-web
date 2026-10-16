@@ -25,8 +25,8 @@ const columns = await getColumns({ limit: 1 });
       <img class="hero__image" src="/images/exterior.jpg" alt="イイダ眼科医院 外観" width="1600" height="1000" loading="eager" fetchpriority="high" />
       <div class="container hero__copy">
         <p class="eyebrow">静岡市葵区城北 ・ {clinic.founded}年開院</p>
-        <h1 class="hero__tagline">見えるを守り、<br />暮らすを支える。</h1>
-        <p class="hero__lead">3名の眼科専門医による診療と日帰り手術で、毎日の「見える」をお守りします。お子さまの目の健康からご高齢の方の手術まで、地域のかかりつけ眼科として。</p>
+        <h1 class="hero__tagline"><span class="hero__line">{clinic.tagline.split("、")[0]}、</span><span class="hero__line">{clinic.tagline.split("、")[1]}</span></h1>
+        <p class="hero__lead">3名の眼科専門医による診療と日帰り手術で、毎日の「みえる」をお守りします。お子さまの目の健康からご高齢の方の手術まで、地域のかかりつけ眼科として。</p>
       </div>
     </div>
     <div class="hero__side">
@@ -159,6 +159,11 @@ const columns = await getColumns({ limit: 1 });
     flex-direction: column;
     gap: 14px;
     padding-block: var(--space-6) var(--space-5);
+  }
+  /* 行頭の「 を少し外に出し、見た目の左端を揃える (ぶら下げ) */
+  .hero__line {
+    display: block;
+    text-indent: -0.5em;
   }
   .hero__tagline {
     font-family: var(--font-serif);
