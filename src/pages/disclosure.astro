@@ -58,6 +58,31 @@ const updated = formatDate(new Date(disclosure.updated));
           <ul class="item__body small">
             {it.body.map((b) => <li>{b}</li>)}
           </ul>
+          {'points' in it && it.points && (
+            <div class="sub-table">
+              <table class="points">
+                <caption class="visually-hidden">コンタクトレンズ装用目的の検査に係る点数</caption>
+                <tbody>
+                  {it.points.rows.map((r) => (
+                    <tr><th scope="row">{r.name}</th><td>{r.points}点</td></tr>
+                  ))}
+                </tbody>
+              </table>
+              <p class="caption">{it.points.asOf}</p>
+            </div>
+          )}
+          {'doctors' in it && it.doctors && (
+            <div class="sub-table">
+              <p class="small"><strong>{it.doctors.label}</strong></p>
+              <table class="points">
+                <tbody>
+                  {it.doctors.rows.map((r) => (
+                    <tr><th scope="row">{r.name}</th><td>{r.years}年</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
           {it.link && <a class="item__link" href={it.link.href}>{it.link.label} →</a>}
         </article>
       ))}
@@ -203,6 +228,26 @@ const updated = formatDate(new Date(disclosure.updated));
     flex-direction: column;
     gap: 2px;
   }
+  .sub-table {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 420px;
+  }
+  .points {
+    font-size: 13.5px;
+  }
+  .points th {
+    font-weight: 500;
+    width: 60%;
+  }
+  .points td {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--ink-900);
+  }
   .item__link {
     align-self: flex-start;
     font-size: 14px;
@@ -234,7 +279,8 @@ const updated = formatDate(new Date(disclosure.updated));
       grid-template-columns: 280px 1fr;
       gap: 8px 24px;
     }
-    .item__link {
+    .item__link,
+    .sub-table {
       grid-column: 2;
     }
     .sentei {
