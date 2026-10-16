@@ -1,0 +1,250 @@
+---
+/**
+ * 掲示事項 (/disclosure)
+ * 保険医療機関として院内に掲示している事項を、同じ内容・同じ順で掲載する (書面掲示事項のウェブサイト掲載)。
+ * 内容は src/data/disclosure.json が正。点数は書かず、名称と取り組みを書く。
+ */
+import Page from '@/layouts/Page.astro';
+import { clinic, formatDate } from '@/lib/site';
+import disclosure from '@/data/disclosure.json';
+
+const toc = [
+  { href: '#filings', label: '施設基準の届出' },
+  { href: '#items', label: '加算・体制に関する掲示' },
+  { href: '#sentei', label: '選定療養' },
+  { href: '#fees', label: '保険外負担の料金' },
+  { href: '#other', label: 'その他の掲示' },
+];
+
+const updated = formatDate(new Date(disclosure.updated));
+---
+
+<Page
+  title="掲示事項"
+  description="イイダ眼科医院の保険医療機関としての掲示事項。東海北陸厚生局への施設基準の届出、医療DX推進体制整備加算などの加算・体制、選定療養(多焦点眼内レンズ・近視進行抑制)、保険外負担の料金。"
+  eyebrow="DISCLOSURE"
+  lead="保険医療機関として院内に掲示している事項を掲載しています。内容は院内掲示と同じです。"
+  crumbs={[{ label: '掲示事項' }]}
+  toc={toc}
+  cta={false}
+>
+  <section id="filings">
+    <h2 class="heading">施設基準の届出<span class="sub">FILINGS</span></h2>
+    <p class="small">当院は厚生労働大臣の定める保険医療機関です。次の施設基準について、{disclosure.bureau}長に届出を行い、受理されています。</p>
+    <div class="table-wrap">
+      <table class="filings">
+        <thead>
+          <tr><th scope="col">施設基準の名称</th><th scope="col" class="no">受理番号</th><th scope="col" class="date">受理日</th></tr>
+        </thead>
+        <tbody>
+          {disclosure.filings.map((f) => (
+            <tr>
+              <td>{f.name}</td>
+              <td class="no">({f.abbr}) {f.no}</td>
+              <td class="date"><time datetime={f.iso}>{f.date}</time></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="items">
+    <h2 class="heading">加算・体制に関する掲示<span class="sub">NOTICES</span></h2>
+    <div class="items">
+      {disclosure.items.map((it) => (
+        <article class="item" id={`item-${it.id}`}>
+          <h3 class="item__title">{it.title}{it.check && <span class="check">[要確認: {it.check}]</span>}</h3>
+          <ul class="item__body small">
+            {it.body.map((b) => <li>{b}</li>)}
+          </ul>
+          {it.link && <a class="item__link" href={it.link.href}>{it.link.label} →</a>}
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section id="sentei">
+    <h2 class="heading">選定療養<span class="sub">SENTEI RYOYO</span></h2>
+    <p class="small">選定療養は、患者さんご自身が選択して受ける追加的な医療サービスで、その分の費用は全額自己負担となります。当院では次の選定療養を行っています。費用は院内に掲示し、各ページにも掲載しています。</p>
+    <div class="sentei">
+      {disclosure.sentei.map((s) => (
+        <div class="card card--accent sentei__card">
+          <p class="title">{s.title}</p>
+          <p class="small">{s.text}</p>
+          <a class="item__link" href={s.href}>{s.label} →</a>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section id="fees">
+    <h2 class="heading">保険外負担の料金<span class="sub">FEES</span></h2>
+    <p class="small">診断書・証明書など、健康保険の対象とならない文書の料金です。</p>
+    <div class="table-wrap">
+      <table class="fees">
+        <thead>
+          <tr><th scope="col">文書の種類</th><th scope="col" class="price">料金(税込)</th></tr>
+        </thead>
+        <tbody>
+          {disclosure.fees.rows.map((r) => (
+            <tr><td>{r.item}</td><td class="price">{r.price}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">{disclosure.fees.note}</p>
+  </section>
+
+  <section id="other">
+    <h2 class="heading">その他の掲示<span class="sub">OTHERS</span></h2>
+    <dl class="rule-list defs">
+      {disclosure.other.map((o) => (
+        <div class="def">
+          <dt class="title">{o.title}</dt>
+          <dd class="small">{o.text}{o.href && <> <a href={o.href}>{o.label} →</a></>}</dd>
+        </div>
+      ))}
+    </dl>
+    <p class="caption updated">最終更新: {updated} ・ 掲示責任者: {clinic.name} 院長</p>
+  </section>
+</Page>
+
+<style>
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    scroll-margin-top: 80px;
+  }
+  .small {
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  dd {
+    margin: 0;
+  }
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface-card);
+    border: var(--border-hair) solid var(--line-200);
+    font-size: 13.5px;
+    line-height: 1.7;
+    text-align: left;
+  }
+  th,
+  td {
+    padding: 11px 12px;
+    border-bottom: var(--border-hair) solid var(--line-050);
+    vertical-align: top;
+  }
+  thead th {
+    background: var(--surface-100);
+    font-weight: 700;
+    border-bottom: var(--border-rule) solid var(--line-strong);
+    white-space: nowrap;
+  }
+  .filings {
+    min-width: 640px;
+  }
+  .filings .no {
+    width: 170px;
+    white-space: nowrap;
+    color: var(--ink-500);
+  }
+  .filings .date {
+    width: 140px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .fees {
+    min-width: 420px;
+  }
+  .fees .price {
+    width: 160px;
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 加算・体制 */
+  .items {
+    display: flex;
+    flex-direction: column;
+    border-top: var(--border-rule) solid var(--line-strong);
+  }
+  .item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 0;
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .item__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink-900);
+    line-height: 1.6;
+  }
+  .check {
+    margin-left: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--alert-700);
+  }
+  .item__body {
+    list-style: disc;
+    padding-left: 1.2em;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .item__link {
+    align-self: flex-start;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* 選定療養 */
+  .sentei {
+    display: grid;
+    gap: 12px;
+  }
+  .sentei__card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .def {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .updated {
+    margin-top: 8px;
+  }
+
+  @media (min-width: 768px) {
+    .item {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 8px 24px;
+    }
+    .item__link {
+      grid-column: 2;
+    }
+    .sentei {
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .def {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 16px;
+    }
+  }
+</style>
