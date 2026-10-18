@@ -17,6 +17,7 @@
 - 下層ページのデザイン (手術のご案内・白内障・こどもの近視抑制): https://claude.ai/artifact/AEJczNBt4BU1HSpyZKSQ17
 - セルフ受付機の画面案 (待機・読み取り直後・完了): https://claude.ai/artifact/HSXYvkQwbWw53MaBDFidhg
 - 聞き取りメモ・[要確認] 一覧: [docs/content-notes.md](docs/content-notes.md)
+- Cloudflare 設定・DNS 移行手順: [docs/cloudflare-設定.xlsx](docs/cloudflare-設定.xlsx) / [docs/dns-migration.md](docs/dns-migration.md)
 
 ## 開発
 
