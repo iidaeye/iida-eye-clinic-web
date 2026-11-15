@@ -1,5 +1,5 @@
 ---
-/** 4術式のカード。紺背景のセクション内で使う前提 (トップ・手術のご案内) */
+/** 術式のカード (clinic.json の surgeries)。紺背景のセクション内で使う前提 (トップ・手術のご案内) */
 import { clinic } from '@/lib/site';
 
 interface Props {
@@ -53,7 +53,7 @@ const { detailed = false } = Astro.props;
   }
   @media (min-width: 768px) {
     .surgery-cards {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 16px;
     }
     .surgery-cards--detailed {
