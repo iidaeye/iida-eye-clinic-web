@@ -1,0 +1,401 @@
+---
+/**
+ * ICL (/surgery/icl)
+ * 有水晶体眼内レンズによる近視矯正。自由診療。
+ * 医療広告ガイドラインの限定解除要件 (治療内容・費用・期間と回数・主なリスクと副作用・承認状況) を本文に明記する。
+ * 「眼鏡いらず」「安全」などの断定、体験談、他院比較は書かない。利点と同じ分量で限界とリスクを書く。
+ * 料金は src/data/icl-fees.json (院内の料金表と一致させる)。[要確認] は確定後に差し替える。
+ */
+import Page from '@/layouts/Page.astro';
+import iclFees from '@/data/icl-fees.json';
+
+const yen = (n: number | null) => (n === null ? '[要確認]' : n.toLocaleString('ja-JP') + '円');
+
+const toc = [
+  { href: '#about', label: 'ICLとは' },
+  { href: '#who', label: '対象となる方' },
+  { href: '#flow', label: '検査から手術までの流れ' },
+  { href: '#risks', label: 'リスクと限界' },
+  { href: '#fees', label: '費用(自由診療)' },
+  { href: '#disclosure', label: '自由診療に関する表示' },
+  { href: '#faq', label: 'よくあるご質問' },
+];
+
+const suitable = [
+  '[要確認: 年齢の下限(例: 21歳以上)]で、近視の度数がここ1年ほど安定している',
+  '近視や乱視が強く、レーザーで角膜を削る方法が向かない、または避けたい',
+  '眼鏡やコンタクトレンズの煩わしさを減らしたい',
+  '白内障・緑内障・網膜の病気など、目の病気がない',
+];
+
+const unsuitable = [
+  '前房(角膜と虹彩の間)が浅い、角膜内皮細胞が少ないなど、検査で安全に留置できないと判断された方',
+  '白内障の始まっている方、緑内障・ぶどう膜炎などの目の病気のある方',
+  '度数が変動している方、妊娠中・授乳中の方',
+  '老眼(近くの見えにくさ)を解消したい方。ICLは遠くの見え方を矯正するレンズで、老眼は矯正しません',
+];
+
+const flow = [
+  { n: '01', title: '通常の外来を受診', text: 'ICLをご希望の旨をお伝えください。目の病気の有無を確認し、適応検査の予約を取ります。', where: '保険診療' },
+  { n: '02', title: '適応検査', text: '視力・屈折、角膜の形と内皮細胞、前房の深さ、眼底などを調べます。瞳を開く点眼を使うため、当日は運転できません。コンタクトレンズは検査前に一定期間外していただきます。[要確認: ソフト・ハードそれぞれの中止期間]', where: '自由診療' },
+  { n: '03', title: '説明とレンズの発注', text: '検査結果をもとに、適応の有無、レンズの度数とサイズ、費用、リスクをご説明します。同意のうえでレンズを発注します。到着まで[要確認: 通常の待ち期間。乱視用・特注の場合の期間]かかります。', where: '自由診療' },
+  { n: '04', title: '手術', text: '点眼麻酔で、角膜の縁の約3mmの切開から折りたたんだレンズを入れ、虹彩の後ろ・水晶体の前に固定します。片眼[要確認: 所要時間]程度です。[要確認: 両眼同日か、片眼ずつか。手術日]', where: '自由診療' },
+  { n: '05', title: '術後の検診', text: '翌日・1週間後・1か月後・3か月後・[要確認: 以降の間隔]に、視力と眼圧、レンズの位置を確認します。その後も年1回程度の検診をお勧めします。', where: '自由診療' },
+];
+
+const risks = [
+  { k: '見え方', v: '夜間に光の周りに輪や広がり(ハロー・グレア)を感じることがあります。多くは時間とともに気にならなくなりますが、残る場合があります。' },
+  { k: '眼圧上昇', v: '術後早期に眼圧が上がることがあり、点眼や処置で対応します。まれにレンズのサイズが合わず、眼圧が下がらない場合は交換が必要になります。' },
+  { k: '白内障', v: 'レンズが水晶体に近いため、長期的に白内障が早く進む可能性が指摘されています。白内障になった場合はICLを取り出して白内障手術を行います。' },
+  { k: 'レンズの位置', v: 'サイズが合わない場合や、乱視用レンズが回転した場合は、位置の調整や交換の手術が必要になることがあります。' },
+  { k: '感染', v: '眼の中に器具とレンズを入れる手術のため、頻度は低いものの眼内炎を起こす可能性があります。重い視力障害につながることがあるため、術後の点眼と検診を守っていただきます。' },
+  { k: '矯正の限界', v: '狙いどおりの度数にならず、眼鏡やコンタクトレンズが必要になることがあります。近視が進めば、再び見えにくくなることもあります。老眼は矯正されず、年齢とともに手元用の眼鏡が必要になります。' },
+  { k: '強度近視そのもの', v: 'ICLで近視を矯正しても、強度近視に伴う網膜剥離や緑内障などのリスクは変わりません。術後も定期的な眼底検査が必要です。' },
+];
+
+const faq = [
+  { q: 'レーシックとの違いは何ですか?', a: 'レーシックは角膜をレーザーで削って度数を変えますが、ICLは角膜を削らずに眼の中にレンズを入れます。強い近視にも対応でき、必要があればレンズを取り出せる点が異なります。一方で眼の中の手術であるため、感染や白内障など眼内手術特有のリスクがあります。当院ではレーシックは行っていません。[要確認]' },
+  { q: '手術は痛いですか?', a: '点眼の麻酔で行い、強い痛みを感じることはほとんどありません。手術中は光がまぶしく、圧迫感を感じることがあります。' },
+  { q: '翌日から仕事はできますか?', a: '見え方は翌日からかなり回復する方が多いですが、安定するまで数週間かかります。デスクワークは翌日から可能なことが多く、目に水が入る作業や激しい運動は[要確認: 制限の期間]お控えください。' },
+  { q: 'レンズは一生そのままですか?', a: '長期の留置を前提としたレンズですが、白内障の手術をするときなどには取り出します。定期検診で位置や眼圧を確認し続けることが必要です。' },
+  { q: '保険はききますか? 医療費控除は?', a: 'ICLは健康保険の対象外(自由診療)で、費用は全額自己負担です。医療費控除の対象になるかは税務署にご確認ください。[要確認: 当院としての案内の仕方]' },
+  { q: '適応検査を受けたら必ず手術をしないといけませんか?', a: 'いいえ。検査の結果、適応がないと判断する場合もありますし、説明を聞いたうえでお断りいただいても構いません。' },
+];
+---
+
+<Page
+  title="ICL(眼内コンタクトレンズ)"
+  description="イイダ眼科医院のICL(有水晶体眼内レンズ)による近視・乱視の矯正。角膜を削らずに眼の中にレンズを入れる自由診療の手術です。対象となる方、検査から手術までの流れ、リスクと限界、費用。"
+  eyebrow="ICL"
+  lead="角膜を削らずに、眼の中に小さなレンズを入れて近視・乱視を矯正する手術です。健康保険の対象外(自由診療)で、適応検査で安全に行えると判断した方に行います。利点だけでなく、リスクと限界も含めてご説明します。"
+  crumbs={[{ href: '/medical', label: '診療案内' }, { href: '/surgery', label: '手術のご案内' }, { label: 'ICL' }]}
+  toc={toc}
+  cta={{ title: 'ICLのご相談は、まず通常の外来で', text: 'ICLが向いているかどうかは、目の状態を診たうえで適応検査を行って判断します。まずは通常の外来を受診し、ICL希望とお伝えください。' }}
+>
+  <section id="about">
+    <h2 class="heading">ICLとは<span class="sub">ABOUT</span></h2>
+    <div class="two-col">
+      <div class="prose-block">
+        <p>ICL(Implantable Collamer Lens、有水晶体眼内レンズ)は、虹彩の後ろ・水晶体の前に固定する柔らかいレンズです。コンタクトレンズのように度数を補いますが、取り外しの必要がなく、眼の中に留置したままにします。</p>
+        <p>角膜を削らないため角膜の形が変わらず、強い近視にも対応できます。必要があればレンズを取り出すこともできます。一方で、眼の中にレンズを入れる手術であるため、感染や白内障など眼内手術に伴うリスクがあります。</p>
+        <p>当院で使用するレンズは、厚生労働省の承認を受けた有水晶体眼内レンズです。[要確認: 製品名(EVO ICL など)]</p>
+      </div>
+      <img class="figure" src="/images/placeholder-interior.svg" alt="ICLの留置位置の図解" width="640" height="420" loading="lazy" />
+    </div>
+  </section>
+
+  <section id="who">
+    <h2 class="heading">対象となる方<span class="sub">WHO</span></h2>
+    <div class="two-col">
+      <div class="who-block">
+        <p class="heading-sm">向いている方</p>
+        <ul class="rule-list checks">
+          {suitable.map((s) => <li>{s}</li>)}
+        </ul>
+      </div>
+      <div class="who-block">
+        <p class="heading-sm">お勧めしない方・受けられない方</p>
+        <ul class="rule-list small">
+          {unsuitable.map((s) => <li>{s}</li>)}
+        </ul>
+      </div>
+    </div>
+    <p class="small muted">[要確認: 当院で対象とする近視・乱視の度数の範囲、年齢の上限]</p>
+  </section>
+
+  <section id="flow">
+    <h2 class="heading">検査から手術までの流れ<span class="sub">FLOW</span></h2>
+    <ol class="steps">
+      {flow.map((s) => (
+        <li class="step">
+          <span class="step__n">{s.n}</span>
+          <p class="title">{s.title}</p>
+          <p class="small">{s.text}</p>
+          <span class="step__where">{s.where}</span>
+        </li>
+      ))}
+    </ol>
+    <p class="small">執刀医: [要確認: 医師名。ICLの認定医資格の有無]</p>
+  </section>
+
+  <section id="risks">
+    <h2 class="heading">リスクと限界<span class="sub">RISKS</span></h2>
+    <p>どの手術にも合併症の可能性があります。ICLで起こりうる主なものと、この手術ではできないことを挙げます。手術前の説明で、ご自身の目の状態に即してあらためてご説明します。</p>
+    <dl class="rule-list defs">
+      {risks.map((d) => (
+        <div class="def">
+          <dt class="title">{d.k}</dt>
+          <dd class="small">{d.v}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <section id="fees">
+    <h2 class="heading">費用(自由診療)<span class="sub">FEES</span></h2>
+    <p>ICLは健康保険の対象外で、適応検査から手術、術後の定期検診まで全額自己負担です。金額は税込です。</p>
+    <div class="fees">
+      <div class="fees__head">
+        <p class="heading-sm">ICL 料金表</p>
+        <p class="caption">{iclFees.asOf}</p>
+      </div>
+      <div class="table-wrap">
+        <table class="fee-table">
+          <thead>
+            <tr><th scope="col">項目</th><th scope="col">単位</th><th scope="col" class="num">金額(税込)</th><th scope="col">備考</th></tr>
+          </thead>
+          <tbody>
+            {iclFees.items.map((it) => (
+              <tr>
+                <th scope="row">{it.name}</th>
+                <td>{it.unit}</td>
+                <td class="num">{yen(it.fee)}</td>
+                <td class="small">{it.note}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <dl class="rule-list defs">
+        <div class="def">
+          <dt class="title">含まれるもの</dt>
+          <dd class="small">{iclFees.includes}</dd>
+        </div>
+        <div class="def">
+          <dt class="title">含まれないもの</dt>
+          <dd class="small">{iclFees.excludes}</dd>
+        </div>
+      </dl>
+      <p class="caption">金額は改定されることがあります。最新の金額は院内の料金表および説明文書をご確認ください。</p>
+    </div>
+  </section>
+
+  <section id="disclosure">
+    <h2 class="heading">自由診療に関する表示<span class="sub">DISCLOSURE</span></h2>
+    <p class="small">医療広告ガイドラインに基づき、自由診療について次の事項を掲載しています。</p>
+    <dl class="rule-list defs">
+      <div class="def">
+        <dt class="title">治療の内容</dt>
+        <dd class="small">有水晶体眼内レンズ(ICL)を虹彩の後ろに留置し、近視・乱視を矯正する手術。点眼麻酔、日帰り。</dd>
+      </div>
+      <div class="def">
+        <dt class="title">費用</dt>
+        <dd class="small">上記の料金表のとおり(税込、全額自己負担)。</dd>
+      </div>
+      <div class="def">
+        <dt class="title">標準的な期間と回数</dt>
+        <dd class="small">適応検査1回、手術[要確認: 両眼同日なら1回、片眼ずつなら2回]、術後の定期検診を[要確認: 期間]にわたり[要確認: 回数]程度。</dd>
+      </div>
+      <div class="def">
+        <dt class="title">主なリスク・副作用</dt>
+        <dd class="small">ハロー・グレア、眼圧上昇、白内障、レンズの位置ずれや回転による再手術、感染(眼内炎)、矯正の過不足、角膜内皮細胞の減少。詳しくは「リスクと限界」をご覧ください。</dd>
+      </div>
+      <div class="def">
+        <dt class="title">承認状況</dt>
+        <dd class="small">使用するレンズは厚生労働省の承認を受けた医療機器です。[要確認: 製品名と承認番号の記載要否]</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section id="faq">
+    <h2 class="heading">よくあるご質問<span class="sub">FAQ</span></h2>
+    <dl class="rule-list">
+      {faq.map((f) => (
+        <div class="faq">
+          <dt class="title">{f.q}</dt>
+          <dd class="small">{f.a}</dd>
+        </div>
+      ))}
+    </dl>
+    <div class="related">
+      <a class="card" href="/surgery">手術のご案内(流れ・当日)<span>→</span></a>
+      <a class="card" href="/medical/contact-lens">コンタクトレンズ処方<span>→</span></a>
+      <a class="card" href="/visit">受診案内<span>→</span></a>
+    </div>
+  </section>
+</Page>
+
+<style>
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    scroll-margin-top: 80px;
+  }
+  .small {
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  dd {
+    margin: 0;
+  }
+  .two-col {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .prose-block,
+  .who-block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .checks li {
+    position: relative;
+    padding-left: 28px;
+    font-weight: 500;
+  }
+  .checks li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 14px;
+    width: 12px;
+    height: 12px;
+    border: var(--border-hair) solid var(--navy-700);
+    border-radius: 3px;
+  }
+  .def,
+  .faq {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .figure {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    background: var(--surface-100);
+  }
+
+  /* 流れ */
+  .steps {
+    display: grid;
+    border-top: var(--border-rule) solid var(--line-strong);
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 0;
+    border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .step:last-child {
+    border-bottom: 0;
+  }
+  .step__n {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--navy-700);
+  }
+  .step__where {
+    align-self: flex-start;
+    padding: 2px 8px;
+    border: var(--border-hair) solid var(--line-200);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--ink-500);
+  }
+
+  /* 料金表 */
+  .fees {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .fees__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    background: var(--surface-card);
+    border: var(--border-hair) solid var(--line-200);
+    font-size: 13.5px;
+    line-height: 1.7;
+    text-align: left;
+  }
+  th,
+  td {
+    padding: 12px 12px;
+    border-bottom: var(--border-hair) solid var(--line-050);
+    vertical-align: top;
+  }
+  thead th {
+    background: var(--surface-100);
+    font-weight: 700;
+    border-bottom: var(--border-rule) solid var(--line-strong);
+    white-space: nowrap;
+  }
+  tbody th {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .fee-table .num {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .fee-table td.num {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink-900);
+  }
+  .related {
+    display: grid;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .related .card {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+    color: var(--ink-900);
+    text-decoration: none;
+  }
+
+  @media (min-width: 768px) {
+    .two-col {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+    .def {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+    }
+    .steps {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+    .step {
+      padding: 24px 20px;
+      border-bottom: 0;
+      border-right: var(--border-hair) solid var(--line-100);
+    }
+    .step:first-child {
+      padding-left: 0;
+    }
+    .step:last-child {
+      padding-right: 0;
+      border-right: 0;
+    }
+    .related {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>
