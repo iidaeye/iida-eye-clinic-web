@@ -280,17 +280,17 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     font-size: 14px;
     font-weight: 500;
   }
-  /* 塗り分けは旧サイト (休診=ピンク、午後休診=水色、お知らせ=黄) を踏襲。色は design/tokens.json の cal-* */
+  /* 休診はピンク (旧サイトを踏襲)、臨時診療は緑。色は design/tokens.json の cal-* */
   .calendar__grid :global(.calendar__day.is-closed) {
     background: var(--cal-closed-bg);
     color: var(--cal-closed-ink);
   }
-  /* 半日休診: 左上=午前、右下=午後。対角線は引かず、休診側の三角だけ塗る */
+  /* 半日休診: 休診と同じピンクで、左上=午前、右下=午後の休診側の三角だけ塗る (色の規則を「ピンク=休み」の一つにする) */
   .calendar__grid :global(.calendar__day.is-pm-closed) {
-    background: linear-gradient(to bottom right, transparent 50%, var(--cal-pm-bg) 50%);
+    background: linear-gradient(to bottom right, transparent 50%, var(--cal-closed-bg) 50%);
   }
   .calendar__grid :global(.calendar__day.is-am-closed) {
-    background: linear-gradient(to bottom right, var(--cal-am-bg) 50%, transparent 50%);
+    background: linear-gradient(to bottom right, var(--cal-closed-bg) 50%, transparent 50%);
   }
   .calendar__grid :global(.calendar__day.is-note) {
     background: var(--cal-special-bg);
@@ -329,12 +329,12 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     border: 1px solid var(--cal-closed-ink);
   }
   .dot--pm {
-    background: linear-gradient(to bottom right, var(--surface-card) 50%, var(--cal-pm-bg) 50%);
-    border: 1px solid var(--cal-pm-ink);
+    background: linear-gradient(to bottom right, var(--surface-card) 50%, var(--cal-closed-bg) 50%);
+    border: 1px solid var(--cal-closed-ink);
   }
   .dot--am {
-    background: linear-gradient(to bottom right, var(--cal-am-bg) 50%, var(--surface-card) 50%);
-    border: 1px solid var(--cal-am-ink);
+    background: linear-gradient(to bottom right, var(--cal-closed-bg) 50%, var(--surface-card) 50%);
+    border: 1px solid var(--cal-closed-ink);
   }
   .dot--note {
     background: var(--cal-special-bg);
@@ -368,14 +368,6 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     white-space: nowrap;
     background: var(--cal-closed-bg);
     color: var(--cal-closed-ink);
-  }
-  .calendar__exceptions :global(.calendar__ex-kind.is-pm-closed) {
-    background: var(--cal-pm-bg);
-    color: var(--cal-pm-ink);
-  }
-  .calendar__exceptions :global(.calendar__ex-kind.is-am-closed) {
-    background: var(--cal-am-bg);
-    color: var(--cal-am-ink);
   }
   .calendar__exceptions :global(.calendar__ex-kind.is-note) {
     background: var(--cal-special-bg);
