@@ -1,17 +1,24 @@
 ---
-/** 診療時間表。データは clinic.json の hours から生成 (画像ではなくHTML表) */
+/**
+ * 診療時間表。データは clinic.json の hours から生成 (画像ではなくHTML表)。
+ * 左上の角に「診療時間」、曜日は 月〜土 + 日祝。● = 診療、手術 = 手術日、／ = 休診。
+ */
 import { clinic, type Locale } from '@/lib/site';
 
 interface Props {
   locale?: Locale;
+  /** false のとき左上の「診療時間」ラベルを空にする (ページ側に見出しがある場合) */
   heading?: boolean;
+  /** 下の受付時間・休診日の注記を出すか */
+  note?: boolean;
 }
-const { locale = 'ja', heading = true } = Astro.props;
+const { locale = 'ja', heading = true, note = true } = Astro.props;
 const h = clinic.hours;
-const days = locale === 'ja' ? h.days : h.daysEn;
+// 日曜と祝日は同じ扱いなので 1 列にまとめる
+const days = (locale === 'ja' ? h.days : h.daysEn).map((d, i, a) => (i === a.length - 1 ? (locale === 'ja' ? '日祝' : 'Sun/Hol') : d));
 const rows = [
-  { label: locale === 'ja' ? '午前' : 'AM', cells: h.am },
-  { label: locale === 'ja' ? '午後' : 'PM', cells: h.pm },
+  { label: locale === 'ja' ? '午前の診療' : 'Morning', time: h.consultation[0].time, cells: h.am },
+  { label: locale === 'ja' ? '午後の診療' : 'Afternoon', time: h.consultation[1].time, cells: h.pm },
 ];
 const mark = (v: string) => {
   if (v === 'open') return { text: '●', cls: 'open', sr: locale === 'ja' ? '診療' : 'Open' };
@@ -21,15 +28,17 @@ const mark = (v: string) => {
 ---
 
 <div class="hours">
-  {heading && <p class="title">{locale === 'ja' ? '診療時間' : 'Hours'}</p>}
   <div class="hours__table" role="table" aria-label={locale === 'ja' ? '診療時間' : 'Hours'}>
     <div class="hours__row hours__row--head" role="row">
-      <div role="columnheader"></div>
+      <div class="hours__corner" role="columnheader">{heading ? (locale === 'ja' ? '診療時間' : 'Hours') : ''}</div>
       {days.map((d) => <div role="columnheader">{d}</div>)}
     </div>
     {rows.map((r) => (
       <div class="hours__row" role="row">
-        <div class="hours__label" role="rowheader">{r.label}</div>
+        <div class="hours__label" role="rowheader">
+          <span>{r.label}</span>
+          <span class="hours__time">{r.time.replace('〜', ' - ')}</span>
+        </div>
         {r.cells.map((c) => {
           const m = mark(c);
           return (
@@ -42,68 +51,103 @@ const mark = (v: string) => {
       </div>
     ))}
   </div>
-  <p class="caption">
-    {locale === 'ja' ? '診療' : 'Consultation'} {h.consultation.map((r) => r.time).join(' / ')}
-    <span class="sep" aria-hidden="true">・</span>
-    {locale === 'ja' ? '受付' : 'Reception'} {h.reception.map((r) => r.time).join(' / ')}<br />
-    {locale === 'ja' ? h.closedNote : h.closedNoteEn}
-  </p>
+  {note && (
+    <p class="hours__note">
+      {locale === 'ja' ? '受付時間' : 'Reception'}&nbsp; {h.reception.map((r) => r.time).join(' / ')}<br />
+      {locale === 'ja' ? h.closedNote.replace('休診:', '休診日:') : h.closedNoteEn}
+    </p>
+  )}
 </div>
 
 <style>
   .hours {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
   .hours__table {
-    background: var(--surface-card);
-    border: var(--border-hair) solid var(--line-200);
-    border-radius: var(--radius-md);
+    background: var(--surface-white);
+    border-radius: var(--radius-lg);
     overflow: hidden;
-    font-size: 12.5px;
+    font-size: 12px;
     text-align: center;
   }
   .hours__row {
     display: grid;
-    grid-template-columns: 1.3fr repeat(7, minmax(0, 1fr));
+    grid-template-columns: 1.9fr repeat(7, minmax(0, 1fr));
+    align-items: center;
   }
   .hours__row + .hours__row {
     border-top: var(--border-hair) solid var(--line-050);
   }
   .hours__row--head > div {
-    padding: 9px 2px;
-    background: var(--surface-100);
+    padding: 12px 2px;
     font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--accent-700);
+  }
+  .hours__corner {
+    background: var(--surface-100);
+    color: var(--ink-900) !important;
+    letter-spacing: 0.12em !important;
   }
   .hours__row > div {
-    padding: 11px 2px;
+    padding: 12px 2px;
   }
   .hours__label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--accent-700);
+  }
+  .hours__time {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .hours__cell {
     font-weight: 700;
   }
   .hours__cell--open {
-    color: var(--navy-700);
+    color: var(--brand-blue);
+    font-size: 13px;
   }
   .hours__cell--surgery {
-    color: var(--ink-500);
+    color: var(--brand-blue);
     font-size: 10px;
+    letter-spacing: 0;
   }
   .hours__cell--closed {
-    color: var(--ink-disabled);
+    color: var(--brand-blue);
+    opacity: 0.55;
+    font-weight: 400;
+  }
+  .hours__note {
+    font-size: 11.5px;
+    line-height: 1.8;
+    letter-spacing: 0.02em;
+    color: var(--ink-700);
   }
   @media (min-width: 768px) {
     .hours__table {
       font-size: 13px;
     }
-    .hours__row--head > div {
-      padding: 10px 4px;
-    }
+    .hours__row--head > div,
     .hours__row > div {
-      padding: 12px 4px;
+      padding: 14px 4px;
+    }
+    .hours__time {
+      font-size: 12px;
     }
     .hours__cell--surgery {
       font-size: 11px;
+    }
+    .hours__note {
+      font-size: 12.5px;
     }
   }
 </style>

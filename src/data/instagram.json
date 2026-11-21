@@ -1,0 +1,13 @@
+{
+  "note": "トップページの Instagram グリッド。API 連携はせず、掲載したい投稿を手で並べる (最大 8 件)。src は public/ 配下か外部URL、href は投稿のURL。",
+  "posts": [
+    { "src": "/images/placeholder-post.svg", "href": "https://www.instagram.com/iida_eye_clinic", "alt": "" },
+    { "src": "/images/placeholder-post.svg", "href": "https://www.instagram.com/iida_eye_clinic", "alt": "" },
+    { "src": "/images/placeholder-post.svg", "href": "https://www.instagram.com/iida_eye_clinic", "alt": "" },
+    { "src": "/images/placeholder-post.svg", "href": "https://www.instagram.com/iida_eye_clinic", "alt": "" },
+    { "src": "/images/placeholder-post.svg", "href": "https://www.instagram.com/iida_eye_clinic", "alt": "" },
+    { "src": "/images/placeholder-post.svg", "href": "https://www.instagram.com/iida_eye_clinic", "alt": "" },
+    { "src": "/images/placeholder-post.svg", "href": "https://www.instagram.com/iida_eye_clinic", "alt": "" },
+    { "src": "/images/placeholder-post.svg", "href": "https://www.instagram.com/iida_eye_clinic", "alt": "" }
+  ]
+}

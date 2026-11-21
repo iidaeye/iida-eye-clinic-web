@@ -1,4 +1,5 @@
 ---
+/** お知らせ一覧。日付 ・ 色付きのカテゴリ札 ・ タイトルを 1 行に並べる */
 import { formatDate } from '@/lib/site';
 import type { NewsEntry } from '@/lib/content';
 
@@ -8,17 +9,16 @@ interface Props {
   withSummary?: boolean;
 }
 const { items, withSummary = false } = Astro.props;
+const tagClass: Record<string, string> = { 重要: 'important', お知らせ: 'info', 休診: 'closed', コラム: 'column' };
 ---
 
-<ul class="rule-list news-list">
-  {items.length === 0 && <li class="muted">現在お知らせはありません。</li>}
+<ul class="news-list">
+  {items.length === 0 && <li class="news-list__empty muted">現在お知らせはありません。</li>}
   {items.map((n) => (
     <li>
       <a href={`/news/${n.id}`} class="news-item">
-        <span class="news-item__meta">
-          <time datetime={n.data.date.toISOString()}>{formatDate(n.data.date)}</time>
-          <span class:list={['news-item__cat', `news-item__cat--${n.data.category}`]}>{n.data.category}</span>
-        </span>
+        <time class="news-item__date" datetime={n.data.date.toISOString()}>{formatDate(n.data.date)}</time>
+        <span class:list={['news-item__cat', `news-item__cat--${tagClass[n.data.category] ?? 'info'}`]}>{n.data.category}</span>
         <span class="news-item__title">{n.data.title}</span>
         {withSummary && n.data.summary && <span class="news-item__summary">{n.data.summary}</span>}
       </a>
@@ -27,53 +27,78 @@ const { items, withSummary = false } = Astro.props;
 </ul>
 
 <style>
-  .news-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  .news-list > li {
+    border-bottom: var(--border-hair) solid var(--line-050);
   }
-  .news-item__meta {
-    display: flex;
+  .news-list__empty {
+    padding: 16px 0;
+  }
+  .news-item {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    column-gap: 12px;
+    row-gap: 6px;
     align-items: center;
-    gap: 10px;
+    padding: 16px 4px;
+  }
+  .news-item__date {
     font-size: 12.5px;
-    color: var(--ink-500);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--ink-700);
+    font-variant-numeric: tabular-nums;
   }
   .news-item__cat {
-    padding: 1px 8px;
-    border: var(--border-hair) solid var(--line-200);
-    border-radius: 3px;
-    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 56px;
+    padding: 2px 10px;
+    white-space: nowrap;
+    border-radius: 4px;
+    font-size: 10.5px;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
+    line-height: 1.6;
+    color: #fff;
+    background: var(--tag-info);
   }
-  .news-item__cat--重要 {
-    border-color: var(--navy-700);
-    color: var(--navy-700);
+  .news-item__cat--important {
+    background: var(--tag-important);
+  }
+  .news-item__cat--closed {
+    background: var(--tag-closed);
+  }
+  .news-item__cat--column {
+    background: var(--tag-column);
   }
   .news-item__title {
+    grid-column: 1 / -1;
     font-size: 14.5px;
-    font-weight: 500;
+    font-weight: 700;
     line-height: 1.6;
     color: var(--ink-900);
   }
+  .news-item:hover .news-item__title {
+    color: var(--brand-blue);
+  }
   .news-item__summary {
+    grid-column: 1 / -1;
     font-size: 13px;
     line-height: 1.8;
     color: var(--ink-700);
   }
   @media (min-width: 768px) {
     .news-item {
-      display: grid;
-      grid-template-columns: 180px 1fr;
-      column-gap: 20px;
-      align-items: baseline;
-    }
-    .news-item__summary {
-      grid-column: 2;
+      grid-template-columns: 96px auto 1fr;
+      column-gap: 24px;
+      padding: 20px 4px;
     }
     .news-item__title {
-      font-size: 15px;
+      grid-column: auto;
+    }
+    .news-item__summary {
+      grid-column: 3;
     }
   }
 </style>

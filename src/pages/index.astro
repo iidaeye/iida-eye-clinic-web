@@ -1,16 +1,39 @@
 ---
+/**
+ * トップページ。構成は 2026-11 の Figma 案に準拠:
+ * ヒーロー(外観写真 + 診療状況 + 診療時間) → 理念 → お知らせ → 休診カレンダー → 院内写真 → 診療案内 → 初めての方へ → Instagram
+ */
 import Base from '@/layouts/Base.astro';
+import Blob from '@/components/Blob.astro';
+import Icon from '@/components/Icon.astro';
+import type { IconName } from '@/components/Icon.astro';
 import ClinicStatus from '@/components/ClinicStatus.astro';
 import Hours from '@/components/Hours.astro';
 import Calendar from '@/components/Calendar.astro';
 import NewsList from '@/components/NewsList.astro';
 import SurgeryCards from '@/components/SurgeryCards.astro';
-import { clinic } from '@/lib/site';
-import { getNews, getColumns } from '@/lib/content';
-import { formatDate } from '@/lib/site';
+import instagram from '@/data/instagram.json';
+import { clinic, taglineParts } from '@/lib/site';
+import { getNews } from '@/lib/content';
 
 const news = await getNews({ limit: 4 });
-const columns = await getColumns({ limit: 1 });
+const tagline = taglineParts(clinic.tagline);
+
+const medical: { href: string; icon: IconName; name: string; text: string }[] = [
+  { href: '/medical', icon: 'eye', name: '眼科一般', text: '目の不調や違和感、気になる症状をご相談ください。' },
+  { href: '/medical/contact-lens', icon: 'lens', name: 'コンタクトレンズ処方', text: '目の健康を大切に、一人ひとりに合ったコンタクトレンズをご提案します。' },
+  { href: '/medical/glasses', icon: 'glasses', name: 'メガネ処方', text: '日常生活をもっと快適に。見え方に合ったメガネ選びをサポートします。' },
+  { href: '/medical/myopia-control', icon: 'drop', name: 'こどもの近視進行抑制治療', text: '国内で承認された低濃度アトロピン点眼薬による、お子さまの近視進行抑制治療(選定療養)のご案内です。' },
+];
+
+const visitLinks: { href: string; icon: IconName; label: string }[] = [
+  { href: '/visit', icon: 'stethoscope', label: '受診の流れ・受付方法' },
+  { href: '/medical/contact-lens', icon: 'lens', label: 'コンタクトレンズ処方' },
+  { href: '/medical/glasses', icon: 'glasses', label: 'メガネ処方' },
+];
+
+const bring = clinic.visit.bring;
+const posts = instagram.posts.slice(0, 8);
 ---
 
 <Base
@@ -19,337 +42,821 @@ const columns = await getColumns({ limit: 1 });
   bareTitle
   alternate={{ ja: '/', en: '/en' }}
 >
-  <!-- ヒーロー + 診療状況 -->
+  <!-- ヒーロー: 外観写真 + 診療状況 + 診療時間 -->
   <section class="hero">
-    <div class="hero__main">
-      <img class="hero__image" src="/images/exterior.jpg" alt="イイダ眼科医院 外観" width="1600" height="1000" loading="eager" fetchpriority="high" />
-      <div class="container hero__copy">
-        <p class="eyebrow">静岡市葵区城北 ・ {clinic.founded}年開院</p>
-        <h1 class="hero__tagline"><span class="hero__line">{clinic.tagline.split("、")[0]}、</span><span class="hero__line">{clinic.tagline.split("、")[1]}</span></h1>
-        <p class="hero__lead">3名の眼科専門医による診療と日帰り手術で、毎日の「みえる」をお守りします。お子さまの目の健康からご高齢の方の手術まで、地域のかかりつけ眼科として。</p>
-      </div>
+    <div class="hero__photo">
+      <Blob shape={2} color="blue" class="hero__blob" />
+      <img src="/images/exterior.jpg" alt="イイダ眼科医院 外観" width="1600" height="1000" loading="eager" fetchpriority="high" />
     </div>
     <div class="hero__side">
-      <div class="container hero__side-inner">
-        <ClinicStatus />
-        <Hours />
+      <ClinicStatus />
+      <Hours />
+    </div>
+  </section>
+
+  <!-- 理念 -->
+  <section class="intro">
+    <Blob shape={1} color="cream" class="intro__blob" />
+    <div class="container intro__inner">
+      <div class="intro__text">
+        <p class="eyebrow">静岡市葵区城北 ・ {clinic.founded}年開院</p>
+        <h1 class="tagline">
+          {tagline.map((p) =>
+            p.type === 'text' ? (
+              p.value.endsWith('、') ? <>{p.value}<br /></> : p.value
+            ) : (
+              <span class={`tagline__${p.type}`}>{p.value}</span>
+            ),
+          )}
+        </h1>
+        <p class="intro__lead">3名の眼科専門医による診療と日帰り手術で、毎日の「みえる」をお守りします。お子さまの目の健康からご高齢の方の手術まで、地域のかかりつけ眼科として。</p>
+        <a class="btn btn--arrow" href="/clinic">当院について</a>
+      </div>
+      <img class="intro__photo" src="/images/placeholder-family.svg" alt="" width="800" height="900" loading="lazy" />
+    </div>
+  </section>
+
+  <!-- お知らせ -->
+  <section class="news container section" id="news">
+    <div class="news__head">
+      <h2 class="heading">お知らせ<span class="sub">News</span></h2>
+      <a class="btn btn--arrow news__more" href="/news">一覧を見る</a>
+    </div>
+    <NewsList items={news} />
+  </section>
+
+  <!-- 休診カレンダー + 受診をご検討の方へ -->
+  <section class="calendar-band section" id="calendar">
+    <div class="container">
+      <h2 class="heading heading--center">休診カレンダー<span class="sub">Clinic Calendar</span></h2>
+      <div class="calendar-band__body">
+        <Calendar>
+          <div slot="aside" class="visit-links">
+            <h3 class="visit-links__title">受診をご検討の方へ</h3>
+            <ul>
+              {visitLinks.map((l) => (
+                <li>
+                  <a class="visit-link" href={l.href}>
+                    <Icon name={l.icon} size={44} />
+                    <span>{l.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Calendar>
       </div>
     </div>
   </section>
 
-  <!-- お知らせ + 休診カレンダー + 受診案内 -->
-  <section class="container section grid-2 grid-2--wide-left">
-    <div class="block">
-      <div class="block__head">
-        <h2 class="heading">お知らせ<span class="sub">NEWS</span></h2>
-        <a class="more" href="/news">一覧へ →</a>
-      </div>
-      <NewsList items={news} />
-    </div>
-    <div class="block">
-      <Calendar />
-      <h2 class="heading-sm" style="margin-top: var(--space-4)">受診をご検討の方へ</h2>
-      <ul class="link-cards">
-        <li><a class="card" href="/visit">受診の流れ・受付方法<span>→</span></a></li>
-        <li><a class="card" href="/medical/contact-lens">コンタクトレンズ処方<span>→</span></a></li>
-        <li><a class="card" href="/medical/glasses">メガネ処方<span>→</span></a></li>
-      </ul>
-    </div>
-  </section>
+  <!-- 院内写真 -->
+  <div class="photo-band">
+    <img src="/images/placeholder-interior.svg" alt="待合室" width="1600" height="600" loading="lazy" />
+    <Blob shape={3} color="blue" class="photo-band__blob" />
+  </div>
 
-  <!-- 手術のご案内 -->
-  <section class="surgery">
-    <div class="container surgery__inner">
+  <!-- 診療案内 -->
+  <section class="medical container section" id="medical">
+    <div class="medical__head">
+      <h2 class="heading heading--center">診療案内<span class="sub">Medical Information</span></h2>
+      <Blob shape={3} color="green" class="medical__blob" />
+    </div>
+    <ul class="medical__cards">
+      {medical.map((m) => (
+        <li>
+          <a class="mcard" href={m.href}>
+            <span class="mcard__icon"><Icon name={m.icon} size={48} /></span>
+            <span class="mcard__name">{m.name}<Icon name="arrow" size={16} class="mcard__arrow" /></span>
+            <span class="mcard__text">{m.text}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <div class="surgery">
       <div class="surgery__head">
-        <div>
-          <h2 class="heading surgery__heading">手術のご案内<span class="sub">SURGERY</span></h2>
+        <span class="mcard__icon surgery__icon"><Icon name="doctor" size={52} /></span>
+        <div class="surgery__intro">
+          <a class="surgery__title" href="/surgery">手術のご案内<Icon name="arrow" size={16} class="mcard__arrow" /></a>
           <p class="surgery__lead">毎週水曜日を手術日とし、日帰りで対応しています。術前の説明から術後の診察まで、執刀医が責任をもって診ます。</p>
         </div>
-        <a class="btn btn--ghost" href="/surgery">手術のご案内 詳細へ</a>
       </div>
       <SurgeryCards />
     </div>
   </section>
 
-  <!-- 医師紹介 + 院内紹介 -->
-  <section class="container section grid-2">
-    <div class="block">
-      <h2 class="heading">医師紹介<span class="sub">DOCTORS</span></h2>
-      <ul class="rule-list doctors">
-        {clinic.doctors.map((d) => (
-          <li class="doctor">
-            <img class="doctor__photo" src="/images/doctor-placeholder.svg" alt="" width="124" height="90" loading="lazy" />
-            <div>
-              <p class="title">{d.role} {d.name}</p>
-              <p class="caption">{d.title}</p>
-            </div>
-          </li>
+  <!-- 初めての方へ -->
+  <section class="first" id="first">
+    <h2 class="heading heading--center container">初めての方へ<span class="sub">First Visit</span></h2>
+    <div class="first__band">
+      <Blob shape={2} color="blue" class="first__blob" />
+      <div class="container first__inner">
+        <div class="first__grid">
+          <div class="first__text">
+            <h3 class="first__title">
+              <Icon name="sparkle" size={22} class="first__sparkle" />
+              <span class="first__em">初診</span>でもLINEで順番が取れます
+            </h3>
+            <p>当院が初めての方も、公式LINEの「診察券番号なしで順番を取る」からオンラインで順番をお取りいただけます。お名前・生年月日・電話番号・気になる症状などをご入力ください(1つのLINEアカウントから1日2人まで)。ご来院時に受付窓口で診察券をお作りし、診察券番号を連携します。</p>
+            <p>順番をお取りいただいたあと、続けてLINEの問診にご回答ください。紙の問診票の代わりになり、来院後の受付と診察がスムーズになります。[要確認: 初診の問診必須化の運用開始時期]</p>
+            <p>オンライン受付をご利用にならない場合は、来院後にセルフ受付機で受付できます。操作がご不明な場合は受付スタッフにお声がけください。</p>
+          </div>
+          <div class="referral">
+            <p class="referral__title">紹介状をお持ちの方は、<br />初診の時間予約ができます</p>
+            <p class="referral__text">病院や診療所からの紹介状(診療情報提供書)をお持ちの方は、お電話で初診の時間予約を受付しています。健康診断の結果用紙のみの場合は対象外となり、通常の順番制での受付となります。</p>
+            <a class="referral__tel" href={clinic.telHref}>
+              <span class="referral__num"><Icon name="phone" size={20} />{clinic.tel}</span>
+              <span class="referral__note">受付時間内</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="bring">
+          <h3 class="bring__title">お持ちいただくもの</h3>
+          <ul class="bring__list">
+            {bring.map((b) => (
+              <li class="bring__item">
+                <span class="bring__name"><Icon name="check" size={20} />{b.item}</span>
+                <span class="bring__note">{b.note}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="first__more">
+          <a class="btn btn--arrow" href="/visit">詳しい受診案内を見る</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Instagram -->
+  <section class="insta container section">
+    <div class="insta__head">
+      <div>
+        <p class="insta__logo"><Icon name="instagram" size={40} /><span>Instagram</span></p>
+        <p class="insta__lead">工事の進捗や院内の日常など、医院の「今」はInstagramで発信しています。</p>
+      </div>
+      <a class="insta__account" href={clinic.links.instagram} target="_blank" rel="noopener">
+        <span class="insta__user"><Icon name="user" size={22} />iida_eye_clinic</span>
+        <span class="insta__tag">#いいだがんか</span>
+      </a>
+    </div>
+    {posts.length > 0 && (
+      <ul class="insta__grid">
+        {posts.map((p) => (
+          <li><a href={p.href} target="_blank" rel="noopener"><img src={p.src} alt={p.alt} width="400" height="400" loading="lazy" /></a></li>
         ))}
       </ul>
-      <a class="btn" href="/clinic/doctors">医師紹介・外来担当表へ</a>
-    </div>
-    <div class="block">
-      <h2 class="heading">新しい医院のご紹介<span class="sub">CLINIC</span></h2>
-      <div class="photo-grid">
-        <img src="/images/placeholder-interior.svg" alt="待合" width="400" height="300" loading="lazy" />
-        <img src="/images/placeholder-interior.svg" alt="検査室" width="400" height="300" loading="lazy" />
-      </div>
-      <p>2026年7月、隣接地に新築移転しました。レンガと木のぬくもりを感じる院内で、検査から診察・手術までを一貫して行います。</p>
-      <a class="btn" href="/clinic/facilities">院内・設備紹介へ</a>
-    </div>
-  </section>
-
-  <!-- コラム + Instagram -->
-  <section class="band">
-  <div class="container section grid-2">
-    <div class="block">
-      <div class="block__head">
-        <h2 class="heading">コラム<span class="sub">COLUMN</span></h2>
-        <a class="more" href="/column">一覧へ →</a>
-      </div>
-      {columns.length > 0 ? (
-        <a class="card" href={`/column/${columns[0].id}`}>
-          <span class="caption">{formatDate(columns[0].data.date)}</span>
-          <span class="title">{columns[0].data.title}</span>
-          <span class="caption">{columns[0].data.description}</span>
-        </a>
-      ) : (
-        <p class="muted">準備中です。</p>
-      )}
-      <p class="caption">医師が執筆する目の健康情報です。</p>
-    </div>
-    <div class="block">
-      <div class="block__head">
-        <h2 class="heading">Instagram</h2>
-        <a class="more" href={clinic.links.instagram} target="_blank" rel="noopener">@iida_eye_clinic</a>
-      </div>
-      <p>工事の進捗や院内の日常など、医院の「今」はInstagramで発信しています。</p>
-      <a class="btn" href={clinic.links.instagram} target="_blank" rel="noopener">Instagramを見る</a>
-    </div>
-  </div>
-  </section>
-
-  <!-- アクセス -->
-  <section class="container section grid-2 grid-2--wide-left">
-    <div class="block">
-      <h2 class="heading">アクセス<span class="sub">ACCESS</span></h2>
-      <iframe class="map" src={clinic.mapEmbed} width="600" height="240" style="border:0" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="イイダ眼科医院の地図"></iframe>
-    </div>
-    <div class="block block--center">
-      <p>〒{clinic.address.postal} {clinic.address.full}<br />TEL <a href={clinic.telHref}>{clinic.tel}</a><br />{clinic.parking}</p>
-      <a class="btn" href="/visit#access">アクセス・駐車場 詳細へ</a>
-      <a class="btn" href="/recruit">スタッフ募集</a>
+    )}
+    <div class="insta__more">
+      <a class="btn btn--arrow" href={clinic.links.instagram} target="_blank" rel="noopener">公式アカウントを見る</a>
     </div>
   </section>
 </Base>
 
 <style>
-  /* ヒーロー */
+  /* ---------- ヒーロー ---------- */
   .hero {
     display: grid;
+    background: var(--surface-000);
   }
-  .hero__image {
+  .hero__photo {
+    position: relative;
+    overflow: hidden;
+  }
+  .hero__photo img {
     width: 100%;
-    height: 250px;
+    height: 240px;
     object-fit: cover;
     object-position: 35% 55%;
   }
-  .hero__copy {
+  .hero__photo :global(.hero__blob) {
+    top: -40px;
+    left: -60px;
+    width: 220px;
+  }
+  .hero__side {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding-block: var(--space-6) var(--space-5);
+    gap: var(--space-5);
+    padding: var(--space-5) var(--space-4) var(--space-6);
   }
-  /* 行頭の「 を少し外に出し、見た目の左端を揃える (ぶら下げ) */
-  .hero__line {
-    display: block;
-    text-indent: -0.5em;
+
+  /* ---------- 理念 ---------- */
+  .intro {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface-000);
   }
-  .hero__tagline {
-    font-family: var(--font-serif);
+  .intro :global(.intro__blob) {
+    top: -60px;
+    right: -120px;
+    width: 420px;
+    opacity: 0.9;
+  }
+  .intro__inner {
+    position: relative;
+    display: grid;
+    gap: var(--space-6);
+    padding-block: var(--space-6) var(--space-7);
+  }
+  .intro__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+  .tagline {
     font-size: 28px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.1em;
     line-height: 1.6;
     color: var(--ink-900);
   }
-  .hero__lead {
+  .tagline__kw {
+    color: var(--brand-blue);
+    font-size: 1.2em;
+    white-space: nowrap;
+  }
+  .tagline__q {
+    color: var(--brand-green);
+    font-size: 1.2em;
+  }
+  .intro__lead {
     font-size: 14px;
-    max-width: 540px;
+    max-width: 560px;
   }
-  .hero__side {
-    background: var(--surface-100);
-    border-top: var(--border-hair) solid var(--line-200);
+  .intro__photo {
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 8 / 9;
+    object-fit: cover;
+    border-radius: var(--radius-xl);
+    justify-self: center;
   }
-  .hero__side-inner {
+
+  /* ---------- お知らせ ---------- */
+  .news {
+    display: grid;
+    gap: var(--space-5);
+    background: transparent;
+  }
+  .news__head {
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
-    padding-block: var(--space-5);
+  }
+  .news__more {
+    align-self: flex-start;
   }
 
-  /* 汎用ブロック */
-  .grid-2 {
-    display: grid;
-    gap: var(--space-6);
+  /* ---------- 休診カレンダー ---------- */
+  .calendar-band {
+    background: var(--surface-000);
   }
-  .block {
+  .calendar-band__body {
+    margin-top: var(--space-6);
+  }
+  .visit-links {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 14px;
   }
-  .block--center {
-    justify-content: center;
-  }
-  .block__head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
-  .more {
-    font-size: 12.5px;
+  .visit-links__title {
+    font-size: 16px;
     font-weight: 700;
-    color: var(--navy-700);
-    white-space: nowrap;
+    letter-spacing: 0.06em;
+    color: var(--ink-900);
   }
-  .link-cards {
-    display: flex;
-    flex-direction: column;
+  .visit-links ul {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
   }
-  .link-cards .card {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    min-height: 56px;
-    padding: 14px 18px;
-    font-size: 14.5px;
-    font-weight: 700;
-  }
-  .link-cards .card span {
-    color: var(--navy-700);
-  }
-  .band {
-    background: var(--surface-100);
-  }
-
-  /* 手術 */
-  .surgery {
-    background: var(--navy-700);
-    color: var(--surface-000);
-  }
-  .surgery__inner {
+  .visit-link {
     display: flex;
     flex-direction: column;
-    gap: 18px;
-    padding-block: var(--space-7);
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    height: 100%;
+    padding: 20px 8px 16px;
+    background: var(--surface-white);
+    border-radius: var(--radius-lg);
+    color: var(--accent-700);
+    text-align: center;
+  }
+  .visit-link span {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+    color: var(--ink-900);
+  }
+  .visit-link:hover span {
+    color: var(--brand-blue);
+  }
+
+  /* ---------- 院内写真 ---------- */
+  .photo-band {
+    position: relative;
+    background: var(--surface-white);
+  }
+  .photo-band img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+  }
+  .photo-band :global(.photo-band__blob) {
+    right: 16px;
+    bottom: -26px;
+    width: 120px;
+  }
+
+  /* ---------- 診療案内 ---------- */
+  .medical {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .medical__head {
+    position: relative;
+  }
+  .medical :global(.medical__blob) {
+    display: none;
+  }
+  .medical__cards {
+    display: grid;
+    gap: 12px;
+  }
+  .mcard {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    padding: 24px 22px 26px;
+    background: var(--surface-100);
+    border-radius: var(--radius-lg);
+  }
+  .mcard:hover {
+    color: inherit;
+  }
+  .mcard__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    height: 96px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-white);
+    color: var(--brand-green);
+  }
+  .mcard__name {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: var(--border-hair) solid var(--line-050);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.5;
+    color: var(--ink-900);
+  }
+  .mcard:hover .mcard__name {
+    color: var(--brand-blue);
+  }
+  :global(.mcard__arrow) {
+    flex-shrink: 0;
+    color: var(--accent-700);
+  }
+  .mcard__text {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--ink-700);
+  }
+  .surgery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: 24px 20px 24px;
+    background: var(--surface-100);
+    border-radius: var(--radius-lg);
   }
   .surgery__head {
     display: flex;
     flex-direction: column;
+    gap: 16px;
+  }
+  .surgery__intro {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+  .surgery__title {
+    display: flex;
+    align-items: center;
     gap: 14px;
-  }
-  .surgery__heading {
-    color: var(--surface-000);
-  }
-  .surgery__heading .sub {
-    color: var(--navy-200);
+    padding-bottom: 10px;
+    border-bottom: var(--border-hair) solid var(--line-050);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ink-900);
   }
   .surgery__lead {
-    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  /* ---------- 初めての方へ ---------- */
+  .first {
+    display: grid;
+    gap: var(--space-5);
+    padding-top: var(--space-6);
+    background: var(--surface-white);
+  }
+  .first__band {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface-000);
+    border-radius: 50% 50% 0 0 / 40px 40px 0 0;
+  }
+  .first :global(.first__blob) {
+    top: -70px;
+    right: -110px;
+    width: 220px;
+  }
+  .first__inner {
+    position: relative;
+    display: grid;
+    gap: var(--space-6);
+    padding-block: var(--space-7) var(--space-7);
+  }
+  .first__grid {
+    display: grid;
+    gap: var(--space-6);
+  }
+  .first__text {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     font-size: 13.5px;
     line-height: 1.9;
-    color: var(--navy-100);
   }
-
-  /* 医師・院内 */
-  .doctor {
+  .first__title {
+    position: relative;
+    padding-left: 4px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1.5;
+    color: var(--ink-900);
+  }
+  .first :global(.first__sparkle) {
+    position: absolute;
+    left: -16px;
+    top: -14px;
+    color: var(--brand-green);
+  }
+  .first__em {
+    color: var(--brand-green);
+  }
+  .referral {
     display: flex;
+    flex-direction: column;
     gap: 14px;
+    padding: 26px 22px 22px;
+    background: var(--surface-white);
+    border-radius: var(--radius-lg);
+  }
+  .referral__title {
+    padding-bottom: 14px;
+    border-bottom: var(--border-hair) solid var(--line-050);
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.6;
+    color: var(--ink-900);
+  }
+  .referral__text {
+    font-size: 12.5px;
+    line-height: 1.9;
+  }
+  .referral__tel {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-  }
-  .doctor__photo {
-    width: 96px;
-    height: 70px;
-    flex-shrink: 0;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
+    gap: 2px;
+    padding: 14px;
     background: var(--surface-100);
+    border-radius: var(--radius-md);
+    color: var(--ink-900);
   }
-  .photo-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .referral__num {
+    display: inline-flex;
+    align-items: center;
     gap: 8px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
   }
-  .photo-grid img {
-    width: 100%;
-    height: 110px;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-    background: var(--surface-100);
+  .referral__num svg {
+    color: var(--brand-blue);
   }
-  .map {
-    width: 100%;
-    height: 200px;
+  .referral__note {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--ink-700);
+  }
+  .bring {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px 18px 22px;
+    background: var(--surface-white);
+    border: 1.5px solid var(--brand-blue);
+    border-radius: var(--radius-lg);
+  }
+  .bring__title {
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--brand-blue);
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--ink-900);
+  }
+  .bring__list {
+    display: grid;
+    gap: 12px;
+  }
+  .bring__item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 18px;
+    background: var(--sky-100);
     border-radius: var(--radius-md);
   }
+  .bring__name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: var(--border-hair) solid rgba(35, 101, 176, 0.15);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+    color: var(--ink-900);
+  }
+  .bring__name svg {
+    flex-shrink: 0;
+    color: var(--brand-blue);
+  }
+  .bring__note {
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--ink-700);
+  }
+  .first__more {
+    display: flex;
+    justify-content: center;
+  }
 
+  /* ---------- Instagram ---------- */
+  .insta {
+    display: grid;
+    gap: var(--space-6);
+    background: var(--surface-white);
+    max-width: none;
+  }
+  .insta > * {
+    width: 100%;
+    max-width: 1152px;
+    margin-inline: auto;
+  }
+  .insta__head {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .insta__logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--ink-900);
+  }
+  .insta__lead {
+    margin-top: 10px;
+    font-size: 13.5px;
+  }
+  .insta__account {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--brand-blue);
+  }
+  .insta__user {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .insta__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .insta__grid li:nth-child(n + 5) {
+    display: none;
+  }
+  .insta__grid img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+  }
+  .insta__more {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ---------- タブレット以上 ---------- */
   @media (min-width: 768px) {
-    .hero__tagline {
+    .hero__photo img {
+      height: 360px;
+    }
+    .hero__side {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+      padding: var(--space-6) var(--space-7);
+    }
+    .intro__inner {
+      grid-template-columns: 1.2fr 1fr;
+      align-items: center;
+      gap: var(--space-7);
+      padding-block: var(--space-7) var(--space-8);
+    }
+    .tagline {
       font-size: 36px;
     }
-    .hero__lead {
+    .intro__lead {
       font-size: 15px;
     }
-    .grid-2 {
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-7);
+    .intro__photo {
+      max-width: none;
+      justify-self: end;
     }
-    .grid-2--wide-left {
-      grid-template-columns: 1.3fr 1fr;
+    .news {
+      grid-template-columns: 240px 1fr;
+      gap: var(--space-7);
+      align-items: start;
+    }
+    .news__head {
+      justify-content: space-between;
+      min-height: 100%;
+    }
+    .news__more {
+      margin-top: var(--space-6);
+    }
+    .photo-band img {
+      height: 400px;
+    }
+    .photo-band :global(.photo-band__blob) {
+      width: 180px;
+      right: 40px;
+      bottom: -40px;
+    }
+    .medical {
+      gap: var(--space-6);
+    }
+    .medical__cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .surgery {
+      padding: 32px 36px 36px;
+      gap: var(--space-6);
     }
     .surgery__head {
       flex-direction: row;
+      align-items: center;
+      gap: 32px;
+    }
+    .surgery__icon {
+      width: 120px;
+      height: 120px;
+      flex-shrink: 0;
+    }
+    .first__band {
+      border-radius: 50% 50% 0 0 / 80px 80px 0 0;
+    }
+    .first__grid {
+      grid-template-columns: 1.1fr 1fr;
+      gap: var(--space-7);
+      align-items: start;
+    }
+    .first__text {
+      padding-top: 8px;
+    }
+    .first__title {
+      font-size: 24px;
+    }
+    .bring {
+      padding: 32px 32px 30px;
+    }
+    .bring__list {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .bring__item:nth-child(-n + 2) {
+      grid-column: span 3;
+    }
+    .bring__item:nth-child(n + 3) {
+      grid-column: span 2;
+    }
+    .insta__head {
+      flex-direction: row;
       justify-content: space-between;
+      align-items: flex-start;
+    }
+    .insta__account {
       align-items: flex-end;
     }
-    .surgery__inner {
-      gap: 28px;
-      padding-block: var(--space-8);
+    .insta__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
-    .doctor__photo {
-      width: 124px;
-      height: 90px;
-    }
-    .photo-grid img {
-      height: 150px;
-    }
-    .map {
-      height: 260px;
+    .insta__grid li:nth-child(n + 5) {
+      display: block;
     }
   }
+
+  /* ---------- PC ---------- */
   @media (min-width: 1024px) {
     .hero {
-      grid-template-columns: 7fr 5fr;
+      grid-template-columns: 11fr 9fr;
     }
-    .hero__image {
-      height: 520px;
+    .hero__photo img {
+      height: 100%;
+      min-height: 560px;
+      border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
     }
-    .hero__copy {
-      padding: 48px 0 52px 64px;
-      gap: 18px;
-    }
-    .hero__tagline {
-      font-size: 44px;
-      line-height: 1.55;
+    .hero__photo :global(.hero__blob) {
+      top: -70px;
+      left: -90px;
+      width: 340px;
     }
     .hero__side {
-      border-top: 0;
-      border-left: var(--border-hair) solid var(--line-200);
-    }
-    .hero__side-inner {
-      padding: 40px 44px;
+      display: flex;
+      flex-direction: column;
       gap: var(--space-5);
+      padding: 28px 64px 40px 40px;
+    }
+    .intro__inner {
+      padding-block: var(--space-8) 72px;
+    }
+    .tagline {
+      font-size: 44px;
+      line-height: 1.5;
+    }
+    .intro :global(.intro__blob) {
+      right: -80px;
+      top: -120px;
+      width: 560px;
+    }
+    .news {
+      grid-template-columns: 300px 1fr;
+      gap: var(--space-8);
+    }
+    .medical__cards {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .medical :global(.medical__blob) {
+      display: block;
+      right: 0;
+      top: -10px;
+      width: 120px;
+    }
+    .first :global(.first__blob) {
+      right: -60px;
+      top: -80px;
+      width: 460px;
+    }
+    .first__inner {
+      padding-block: 72px 72px;
+      gap: var(--space-7);
     }
   }
 </style>

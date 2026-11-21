@@ -1,93 +1,307 @@
 ---
-import { clinic, footerNav, navEn, type Locale } from '@/lib/site';
+/**
+ * フッター。左: ロゴ・住所・駐車場・電話・診療時間表・ボタン。右: クレジットカード・サイトマップ・単独リンク。
+ * 「診療時間」タブ (Header) の飛び先 #hours はここ。
+ */
+import Icon from '@/components/Icon.astro';
+import Hours from '@/components/Hours.astro';
+import { clinic, siteMap, footerLinks, footerLegal, navEn, type Locale } from '@/lib/site';
 
 interface Props {
   locale?: Locale;
 }
 const { locale = 'ja' } = Astro.props;
-const items = locale === 'ja' ? footerNav : [...navEn, { href: '/', label: '日本語' }];
+const ja = locale === 'ja';
 ---
 
-<footer class="footer">
+<footer class="footer" id="hours">
   <div class="container footer__inner">
-    <div class="footer__brand">
-      <img src="/logo/logo-vertical.svg" alt={`${clinic.name} ${clinic.nameEn}`} width="124" height="80" />
-      <p class="caption">
-        〒{clinic.address.postal} {clinic.address.full}<br />
-        TEL <a href={clinic.telHref}>{clinic.tel}</a>
-      </p>
+    <div class="footer__left">
+      <a class="footer__logo" href={ja ? '/' : '/en'} aria-label={`${clinic.name} ${clinic.nameEn}`}>
+        <img src="/logo/mark.svg" alt="" aria-hidden="true" width="51" height="40" />
+        <img src="/logo/wordmark.svg" alt={`${clinic.name} ${clinic.nameEn}`} width="144" height="40" />
+      </a>
+
+      <dl class="footer__facts">
+        <div class="footer__fact footer__fact--address">
+          <dt class="visually-hidden">{ja ? '住所' : 'Address'}</dt>
+          <dd>
+            {ja ? (
+              <>〒{clinic.address.postal}<br />{clinic.address.full}</>
+            ) : (
+              clinic.address.en
+            )}
+          </dd>
+          <a class="btn btn--white btn--sm" href={clinic.access.mapLink} target="_blank" rel="noopener">
+            <Icon name="pin" size={18} />
+            {ja ? 'Googleマップで見る' : 'Open in Google Maps'}
+          </a>
+        </div>
+        <div class="footer__fact">
+          <dt><Icon name="car" size={22} /><span class="visually-hidden">{ja ? '駐車場' : 'Parking'}</span></dt>
+          <dd>{ja ? clinic.parking : 'Free parking for 40 cars'}</dd>
+        </div>
+        <div class="footer__fact">
+          <dt><Icon name="phone" size={20} /><span class="visually-hidden">TEL</span></dt>
+          <dd><a class="footer__tel" href={clinic.telHref}>{clinic.tel}</a></dd>
+        </div>
+      </dl>
+
+      <Hours locale={locale} />
+
+      <div class="footer__actions">
+        <a class="btn btn--line" href={clinic.links.line} target="_blank" rel="noopener">
+          <Icon name="line" size={24} />
+          {ja ? 'LINEで順番をとる' : 'Check in via LINE'}
+        </a>
+        <a class="btn btn--brown" href={clinic.telHref}>
+          <Icon name="phone" size={18} />
+          {ja ? '電話をかける' : 'Call us'}
+        </a>
+      </div>
     </div>
-    <div class="footer__nav">
-      <ul>
-        {items.map((item) => (
-          <li><a href={item.href}>{item.label}</a></li>
-        ))}
-      </ul>
-      <p class="caption copyright">© Iida eye clinic. since {clinic.founded}</p>
+
+    <div class="footer__right">
+      <div class="cards">
+        <p class="cards__title">{ja ? '各種クレジットカードをご利用いただけます' : 'Major credit cards accepted'}</p>
+        <ul class="cards__list">
+          {clinic.visit.cards.map((c) => (
+            <li>{c}</li>
+          ))}
+        </ul>
+      </div>
+
+      {ja ? (
+        <nav class="sitemap" aria-label="サイトマップ">
+          {siteMap.map((g) => (
+            <div class="sitemap__group">
+              <a class="sitemap__head" href={g.href}>{g.label}</a>
+              <ul class="sitemap__items">
+                {g.items.map((i) => (
+                  <li><a href={i.href}>{i.label}</a></li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <ul class="sitemap__single">
+            {footerLinks.map((i) => (
+              <li><a href={i.href}>{i.label}</a></li>
+            ))}
+          </ul>
+          <ul class="sitemap__legal">
+            {footerLegal.map((i) => (
+              <li><a href={i.href}>{i.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      ) : (
+        <nav class="sitemap" aria-label="Site map">
+          <ul class="sitemap__single">
+            {navEn.map((i) => (
+              <li><a href={i.href}>{i.label}</a></li>
+            ))}
+            <li><a href="/">日本語</a></li>
+          </ul>
+        </nav>
+      )}
     </div>
+  </div>
+  <div class="container footer__bottom">
+    <p class="copyright">© Iida eye clinic. since {clinic.founded}</p>
   </div>
 </footer>
 
 <style>
   .footer {
     margin-top: var(--space-8);
-    padding: var(--space-6) 0 var(--space-6);
-    background: var(--surface-100);
-    border-top: var(--border-hair) solid var(--line-200);
+    padding: var(--space-7) 0 var(--space-5);
+    background: var(--surface-000);
+    scroll-margin-top: 24px;
   }
   .footer__inner {
+    display: grid;
+    gap: var(--space-7);
+  }
+  .footer__left {
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
   }
-  .footer__brand {
+  .footer__logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .footer__logo img:first-child {
+    width: 51px;
+    height: 40px;
+  }
+  .footer__logo img:last-child {
+    width: 144px;
+    height: 40px;
+  }
+  .footer__facts {
+    margin: 0;
+  }
+  .footer__fact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: var(--border-hair) solid var(--line-050);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.7;
+    color: var(--ink-900);
+  }
+  .footer__fact dt {
+    display: flex;
+    color: var(--brand-blue);
+  }
+  .footer__fact dd {
+    margin: 0;
+  }
+  .footer__fact--address {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding-top: 0;
+  }
+  .footer__fact--address .btn {
+    flex-shrink: 0;
+  }
+  .footer__tel {
+    font-size: 24px;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .footer__actions {
+    display: grid;
+    gap: 12px;
+  }
+  .footer__actions .btn {
+    min-height: 56px;
+  }
+
+  .footer__right {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-6);
   }
-  .footer__brand img {
-    width: 112px;
-    height: 72px;
+  .cards {
+    background: var(--surface-white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
   }
-  .footer__nav ul {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 12px;
+  .cards__title {
+    padding: 12px 20px;
+    border-bottom: var(--border-hair) solid var(--line-050);
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ink-900);
+  }
+  .cards__list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 10px;
+    padding: 16px 20px;
+  }
+  .cards__list li {
+    padding: 2px 12px;
+    border: var(--border-hair) solid var(--line-100);
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ink-700);
+  }
+
+  .sitemap {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     line-height: 1.8;
   }
-  .copyright {
-    margin-top: var(--space-4);
-    letter-spacing: 0.06em;
+  .sitemap__group {
+    display: grid;
+    gap: 6px;
   }
+  .sitemap__head {
+    font-size: 14px;
+    color: var(--ink-900);
+  }
+  .sitemap__items {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px 16px;
+  }
+  .sitemap__items a,
+  .sitemap__single a,
+  .sitemap__legal a {
+    color: var(--ink-700);
+  }
+  .sitemap__items a::before {
+    content: '―';
+    margin-right: 8px;
+    color: var(--accent-400);
+  }
+  .sitemap__single,
+  .sitemap__legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 28px;
+  }
+  .sitemap__single a {
+    color: var(--ink-900);
+  }
+  .sitemap__legal {
+    font-weight: 500;
+  }
+  .footer__bottom {
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+  }
+  .footer__bottom .copyright {
+    border-top: var(--border-hair) solid var(--line-050);
+    padding-top: var(--space-4);
+    text-align: right;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    color: var(--ink-500);
+  }
+
   @media (min-width: 768px) {
+    .footer__actions {
+      grid-template-columns: 1fr 1fr;
+    }
+    .sitemap__group {
+      grid-template-columns: 150px 1fr;
+      gap: 0 24px;
+    }
+    .sitemap__head {
+      position: relative;
+    }
+    .sitemap__items {
+      border-left: var(--border-hair) solid var(--line-100);
+      padding-left: 24px;
+    }
+  }
+  @media (min-width: 1024px) {
     .footer {
-      padding: var(--space-7) 0 var(--space-6);
+      padding-top: var(--space-8);
     }
     .footer__inner {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: flex-end;
+      grid-template-columns: minmax(0, 11fr) minmax(0, 13fr);
+      gap: var(--space-8);
     }
-    .footer__brand img {
-      width: 124px;
-      height: 80px;
-    }
-    .footer__nav {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 14px;
-    }
-    .footer__nav ul {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 22px;
-    }
-    .copyright {
-      margin-top: 0;
+    .footer__right {
+      padding-top: 72px;
     }
   }
 </style>

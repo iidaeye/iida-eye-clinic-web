@@ -6,7 +6,10 @@
  * API: GET {PUBLIC_CALENDAR_API_URL}?from=YYYY-MM-DD&to=YYYY-MM-DD
  *   days[]: { date, weekday, is_clinic_day, is_exception, exception_type, exception_reason, am.available, pm.available }
  * 未設定時は本番 URL を使う。取得失敗・complete=false のときは定休ルールだけで描き、注意文を出す。
+ *
+ * レイアウト: PC では左にカレンダー、右に臨時休診の一覧 + slot "aside" (受診をご検討の方へ など)。
  */
+import Icon from '@/components/Icon.astro';
 import { clinic, type Locale } from '@/lib/site';
 
 interface Props {
@@ -18,28 +21,30 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
 ---
 
 <div class="calendar" data-calendar-api={api} data-rules={rules} data-locale={locale}>
-  <div class="calendar__head">
-    <p class="title">{locale === 'ja' ? '休診カレンダー' : 'Closed days'}</p>
+  <div class="calendar__main">
     <div class="calendar__nav">
-      <button type="button" data-cal-prev aria-label={locale === 'ja' ? '前の月' : 'Previous month'}>‹</button>
+      <button type="button" data-cal-prev aria-label={locale === 'ja' ? '前の月' : 'Previous month'}><Icon name="chevron-left" size={18} /></button>
       <span data-cal-title class="calendar__month"></span>
-      <button type="button" data-cal-next aria-label={locale === 'ja' ? '次の月' : 'Next month'}>›</button>
+      <button type="button" data-cal-next aria-label={locale === 'ja' ? '次の月' : 'Next month'}><Icon name="chevron-right" size={18} /></button>
     </div>
+    <div class="calendar__grid" data-cal-grid role="grid"></div>
+    <ul class="calendar__legend">
+      <li><span class="dot dot--closed"></span>{locale === 'ja' ? '休診' : 'Closed'}</li>
+      <li><span class="dot dot--pm"></span>{locale === 'ja' ? '午後休診' : 'PM closed'}</li>
+      <li><span class="dot dot--am"></span>{locale === 'ja' ? '午前休診' : 'AM closed'}</li>
+      <li><span class="dot dot--note"></span>{locale === 'ja' ? '臨時診療' : 'Special hours'}</li>
+    </ul>
+    <p class="calendar__warn" data-cal-warn hidden>
+      {locale === 'ja'
+        ? '最新の休診情報を取得できませんでした。通常の診療日程を表示しています。臨時休診は公式LINEまたはお電話でご確認ください。'
+        : 'Latest closure information could not be loaded. Regular hours are shown. Please check our LINE account or call us for temporary closures.'}
+    </p>
+    <noscript><p class="calendar__warn">{locale === 'ja' ? '休診日は公式LINE、またはお電話でご確認ください。' : 'Please check our LINE account or call us for closed days.'}</p></noscript>
   </div>
-  <div class="calendar__grid" data-cal-grid role="grid"></div>
-  <ul class="calendar__legend">
-    <li><span class="dot dot--closed"></span>{locale === 'ja' ? '休診' : 'Closed'}</li>
-    <li><span class="dot dot--pm"></span>{locale === 'ja' ? '午後休診' : 'PM closed'}</li>
-    <li><span class="dot dot--am"></span>{locale === 'ja' ? '午前休診' : 'AM closed'}</li>
-    <li><span class="dot dot--note"></span>{locale === 'ja' ? '臨時診療' : 'Special hours'}</li>
-  </ul>
-  <ul class="calendar__exceptions" data-cal-exceptions hidden></ul>
-  <p class="calendar__warn" data-cal-warn hidden>
-    {locale === 'ja'
-      ? '最新の休診情報を取得できませんでした。通常の診療日程を表示しています。臨時休診は公式LINEまたはお電話でご確認ください。'
-      : 'Latest closure information could not be loaded. Regular hours are shown. Please check our LINE account or call us for temporary closures.'}
-  </p>
-  <noscript><p class="calendar__warn">{locale === 'ja' ? '休診日は公式LINE、またはお電話でご確認ください。' : 'Please check our LINE account or call us for closed days.'}</p></noscript>
+  <div class="calendar__side">
+    <ul class="calendar__exceptions" data-cal-exceptions hidden></ul>
+    <slot name="aside" />
+  </div>
 </div>
 
 <script>
@@ -148,6 +153,8 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
           `<div class="calendar__day${kind ? ` is-${kind}` : ''}${isToday ? ' is-today' : ''}" role="gridcell"${label ? ` aria-label="${d}${ja ? '日 ' : ' '}${label}"` : ''}><span>${d}</span></div>`,
         );
       }
+      // 最終行の余りを埋めて格子を揃える
+      while (cells.length % 7 !== 0) cells.push('<div class="calendar__empty"></div>');
       grid.innerHTML = cells.join('');
 
       // 臨時休診・臨時診療の一覧 (祝日と定休は載せない)。理由は FileMaker の自由入力なので textContent で入れる
@@ -163,16 +170,19 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
         when.textContent = ja
           ? `${date.getMonth() + 1}月${date.getDate()}日(${dayNames[date.getDay()]})`
           : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+        const row = document.createElement('span');
+        row.className = 'calendar__ex-row';
         const what = document.createElement('span');
         what.className = `calendar__ex-kind${v.kind ? ` is-${v.kind}` : ''}`;
         what.textContent = kindLabel(v.kind);
-        li.append(when, what);
+        row.append(what);
         if (v.reason) {
           const why = document.createElement('span');
           why.className = 'calendar__ex-reason';
           why.textContent = v.reason;
-          li.append(why);
+          row.append(why);
         }
+        li.append(when, row);
         list.appendChild(li);
       }
       list.hidden = items.length === 0;
@@ -205,43 +215,50 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
 <style>
   /* グリッドのセルと臨時休診の一覧は JS で生成するため、スコープ付き CSS が当たらない。:global() で指定する */
   .calendar {
+    display: grid;
+    gap: var(--space-6);
+  }
+  .calendar__main {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-  }
-  .calendar__head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 14px;
   }
   .calendar__nav {
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    gap: 18px;
   }
   .calendar__nav button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 36px;
     height: 36px;
-    border: var(--border-hair) solid var(--line-200);
+    border: var(--border-hair) solid var(--line-100);
     border-radius: var(--radius-sm);
-    background: var(--surface-card);
+    background: var(--surface-white);
+    color: var(--accent-700);
     cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
+  }
+  .calendar__nav button:hover {
+    border-color: var(--accent-700);
   }
   .calendar__month {
-    min-width: 7em;
+    min-width: 7.5em;
     text-align: center;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 17px;
+    letter-spacing: 0.12em;
+    color: var(--accent-700);
   }
-  /* 格子: セルの右と下に 1px の薄い罫線、外枠は 1px の濃い罫線 */
+  /* 格子: 白い丸角の箱、セルの右と下に 1px の薄い罫線 */
   .calendar__grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 0;
-    background: var(--surface-card);
-    border: var(--border-hair) solid var(--line-200);
+    background: var(--surface-white);
+    border: var(--border-hair) solid var(--line-050);
     border-radius: var(--radius-md);
     overflow: hidden;
   }
@@ -258,27 +275,30 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     border-bottom: 0;
   }
   .calendar__grid :global(.calendar__dow) {
-    padding: 6px 0;
+    padding: 8px 0;
     text-align: center;
     font-size: 11.5px;
     font-weight: 700;
-    color: var(--ink-500);
+    color: var(--accent-700);
     background: var(--surface-100);
-    border-bottom-color: var(--line-200);
   }
   .calendar__grid :global(.calendar__dow.is-sun) {
-    color: var(--alert-700);
+    color: var(--cal-closed-ink);
   }
   .calendar__grid :global(.calendar__dow.is-sat) {
-    color: var(--navy-700);
+    color: var(--brand-blue);
+  }
+  .calendar__grid :global(.calendar__empty) {
+    background: var(--surface-card);
   }
   .calendar__grid :global(.calendar__day) {
     display: flex;
     align-items: center;
     justify-content: center;
     aspect-ratio: 1;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink-700);
   }
   /* 塗り分けは旧サイト (休診=ピンク、午後休診=水色、お知らせ=黄) を踏襲。色は design/tokens.json の cal-* */
   .calendar__grid :global(.calendar__day.is-closed) {
@@ -304,15 +324,15 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     width: 28px;
     height: 28px;
     border-radius: var(--radius-pill);
-    background: var(--navy-700);
-    color: var(--surface-000);
+    background: var(--brand-blue);
+    color: #fff;
   }
   .calendar__legend {
     display: flex;
     flex-wrap: wrap;
     gap: 14px;
-    font-size: 12px;
-    color: var(--ink-500);
+    font-size: 11.5px;
+    color: var(--ink-700);
   }
   .calendar__legend li {
     display: inline-flex;
@@ -329,11 +349,11 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     border: 1px solid var(--cal-closed-ink);
   }
   .dot--pm {
-    background: linear-gradient(to bottom right, var(--surface-card) 50%, var(--cal-pm-bg) 50%);
+    background: linear-gradient(to bottom right, var(--surface-white) 50%, var(--cal-pm-bg) 50%);
     border: 1px solid var(--cal-pm-ink);
   }
   .dot--am {
-    background: linear-gradient(to bottom right, var(--cal-am-bg) 50%, var(--surface-card) 50%);
+    background: linear-gradient(to bottom right, var(--cal-am-bg) 50%, var(--surface-white) 50%);
     border: 1px solid var(--cal-am-ink);
   }
   .dot--note {
@@ -341,29 +361,43 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     box-shadow: inset 0 0 0 2px var(--brand-green);
   }
 
-  /* 臨時休診の一覧 */
+  /* 右カラム: 臨時休診の一覧 + 受診カード */
+  .calendar__side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
   .calendar__exceptions {
     display: flex;
     flex-direction: column;
-    border-top: var(--border-hair) solid var(--line-100);
-    font-size: 13px;
+    font-size: 13.5px;
     line-height: 1.7;
   }
   .calendar__exceptions :global(li) {
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px 10px;
-    padding: 8px 0;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 0;
     border-bottom: var(--border-hair) solid var(--line-100);
+  }
+  .calendar__exceptions :global(li:first-child) {
+    padding-top: 0;
   }
   .calendar__exceptions :global(.calendar__ex-date) {
     font-weight: 700;
+    letter-spacing: 0.06em;
     color: var(--ink-900);
-    white-space: nowrap;
+  }
+  .calendar__exceptions :global(.calendar__ex-row) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
   }
   .calendar__exceptions :global(.calendar__ex-kind) {
-    padding: 0 8px;
-    border-radius: 3px;
+    padding: 1px 10px;
+    border-radius: 4px;
+    font-size: 11.5px;
     font-weight: 700;
     white-space: nowrap;
     background: var(--cal-closed-bg);
@@ -382,12 +416,24 @@ const rules = JSON.stringify({ am: clinic.hours.am, pm: clinic.hours.pm });
     color: var(--cal-special-ink);
   }
   .calendar__exceptions :global(.calendar__ex-reason) {
-    flex-basis: 100%;
-    color: var(--ink-500);
+    font-weight: 700;
+    color: var(--ink-700);
   }
   .calendar__warn {
     font-size: 12.5px;
     line-height: 1.7;
     color: var(--alert-700);
+  }
+
+  @media (min-width: 1024px) {
+    .calendar {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+      gap: var(--space-8);
+      align-items: start;
+    }
+    .calendar__nav {
+      justify-content: flex-start;
+      padding-left: 40px;
+    }
   }
 </style>

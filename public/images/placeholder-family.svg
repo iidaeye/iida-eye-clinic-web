@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="900" viewBox="0 0 800 900" role="img" aria-label="写真 (準備中)">
+  <rect width="800" height="900" fill="#ebe4d6"/>
+  <circle cx="330" cy="330" r="110" fill="#ddd3c4"/>
+  <circle cx="520" cy="400" r="80" fill="#ddd3c4"/>
+  <path d="M120 900c0-170 100-300 210-300s210 130 210 300Z" fill="#ddd3c4"/>
+  <path d="M400 900c0-130 60-220 120-220s120 90 120 220Z" fill="#d2c6b2"/>
+  <text x="400" y="840" font-family="Noto Sans JP, Hiragino Sans, sans-serif" font-size="26" fill="#6e6155" text-anchor="middle" letter-spacing="4">写真 (撮影後に差し替え)</text>
+</svg>

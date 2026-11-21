@@ -7,6 +7,7 @@
  *   { "open": true, "waiting": 12, "calling": 38, "message": "本日は3診体制です", "updatedAt": "2026-10-11T09:42:00+09:00" }
  * 実際のレスポンス形式が分かり次第、下の <script> 内 normalize() を合わせる。
  */
+import Icon from '@/components/Icon.astro';
 import { clinic, type Locale } from '@/lib/site';
 
 interface Props {
@@ -16,23 +17,24 @@ const { locale = 'ja' } = Astro.props;
 const api = import.meta.env.PUBLIC_STATUS_API_URL ?? '';
 ---
 
-<div class="card card--primary status" data-status-api={api} data-locale={locale}>
+<div class="status" data-status-api={api} data-locale={locale}>
   <div class="status__head">
     <p class="title">{locale === 'ja' ? 'ただいまの診療状況' : 'Current clinic status'}</p>
     <span class="status__badge" data-status-badge></span>
   </div>
   <div class="status__numbers">
     <div class="status__num">
-      <span class="caption">{locale === 'ja' ? '現在の待ち' : 'Waiting'}</span>
+      <span class="status__label">{locale === 'ja' ? '現在の待ち' : 'Waiting'}</span>
       <span class="status__value"><span data-status-waiting>–</span><small>{locale === 'ja' ? '人' : ''}</small></span>
     </div>
     <div class="status__num">
-      <span class="caption">{locale === 'ja' ? '呼び出し中' : 'Now calling'}</span>
+      <span class="status__label">{locale === 'ja' ? '呼び出し中' : 'Now calling'}</span>
       <span class="status__value"><span data-status-calling>–</span><small>{locale === 'ja' ? '番' : ''}</small></span>
     </div>
   </div>
-  <p class="caption" data-status-message>{locale === 'ja' ? '診療状況を取得しています…' : 'Loading…'}</p>
+  <p class="status__message" data-status-message>{locale === 'ja' ? '診療状況を取得しています…' : 'Loading…'}</p>
   <a class="btn btn--line btn--block" href={clinic.links.line} target="_blank" rel="noopener">
+    <Icon name="line" size={24} />
     {locale === 'ja' ? 'LINEで順番をとる' : 'Check in via LINE'}
   </a>
 </div>
@@ -91,46 +93,68 @@ const api = import.meta.env.PUBLIC_STATUS_API_URL ?? '';
 
 <style>
   .status {
-    gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 22px 20px 20px;
+    background: var(--surface-100);
+    border-radius: var(--radius-lg);
   }
   .status__head {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
   }
   .status__numbers {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: 12px;
   }
   .status__num {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 12px 14px;
-    background: var(--surface-000);
-    border-radius: var(--radius-sm);
+    gap: 4px;
+    padding: 14px 16px 12px;
+    background: var(--surface-white);
+    border-radius: var(--radius-lg);
+  }
+  .status__label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ink-700);
   }
   .status__value {
-    font-family: var(--font-serif);
-    font-size: 30px;
-    font-weight: 600;
+    align-self: flex-end;
+    font-size: 40px;
+    font-weight: 700;
     line-height: 1.1;
-    color: var(--navy-700);
+    letter-spacing: 0.02em;
+    color: var(--accent-700);
+    font-variant-numeric: tabular-nums;
   }
   .status__value small {
-    margin-left: 3px;
-    font-family: var(--font-sans);
-    font-size: 13px;
-    font-weight: 500;
+    margin-left: 4px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink-900);
+  }
+  .status__message {
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--ink-700);
   }
   .status .btn {
-    min-height: 52px;
+    min-height: 56px;
     font-size: 15px;
   }
   @media (min-width: 768px) {
+    .status {
+      padding: 26px 24px 24px;
+    }
     .status__value {
-      font-size: 34px;
+      font-size: 46px;
     }
   }
 </style>
