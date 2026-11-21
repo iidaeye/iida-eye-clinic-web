@@ -4,7 +4,7 @@
  * ヒーロー(外観写真 + 診療状況 + 診療時間) → 理念 → お知らせ → 休診カレンダー → 院内写真 → 診療案内 → 初めての方へ → Instagram
  */
 import Base from '@/layouts/Base.astro';
-import Blob from '@/components/Blob.astro';
+import LogoShape from '@/components/LogoShape.astro';
 import Icon from '@/components/Icon.astro';
 import type { IconName } from '@/components/Icon.astro';
 import ClinicStatus from '@/components/ClinicStatus.astro';
@@ -45,7 +45,7 @@ const posts = instagram.posts.slice(0, 8);
   <!-- ヒーロー: 外観写真 + 診療状況 + 診療時間 -->
   <section class="hero">
     <div class="hero__photo">
-      <Blob shape={2} color="blue" class="hero__blob" />
+      <LogoShape part="eye-left" color="blue" class="hero__blob" />
       <img src="/images/exterior.jpg" alt="イイダ眼科医院 外観" width="1600" height="1000" loading="eager" fetchpriority="high" />
     </div>
     <div class="hero__side">
@@ -56,7 +56,7 @@ const posts = instagram.posts.slice(0, 8);
 
   <!-- 理念 -->
   <section class="intro">
-    <Blob shape={1} color="cream" class="intro__blob" />
+    <LogoShape part="eye-right" color="cream" class="intro__blob" />
     <div class="container intro__inner">
       <div class="intro__text">
         <p class="eyebrow">静岡市葵区城北 ・ {clinic.founded}年開院</p>
@@ -112,14 +112,14 @@ const posts = instagram.posts.slice(0, 8);
   <!-- 院内写真 -->
   <div class="photo-band">
     <img src="/images/placeholder-interior.svg" alt="待合室" width="1600" height="600" loading="lazy" />
-    <Blob shape={3} color="blue" class="photo-band__blob" />
+    <LogoShape part="blue" color="blue" class="photo-band__blob" />
   </div>
 
   <!-- 診療案内 -->
   <section class="medical container section" id="medical">
     <div class="medical__head">
       <h2 class="heading heading--center">診療案内<span class="sub">Medical Information</span></h2>
-      <Blob shape={3} color="green" class="medical__blob" />
+      <LogoShape part="green" color="green" class="medical__blob" />
     </div>
     <ul class="medical__cards">
       {medical.map((m) => (
@@ -148,7 +148,7 @@ const posts = instagram.posts.slice(0, 8);
   <section class="first" id="first">
     <h2 class="heading heading--center container">初めての方へ<span class="sub">First Visit</span></h2>
     <div class="first__band">
-      <Blob shape={2} color="blue" class="first__blob" />
+      <LogoShape part="eye-right" color="blue" class="first__blob" />
       <div class="container first__inner">
         <div class="first__grid">
           <div class="first__text">
@@ -231,9 +231,9 @@ const posts = instagram.posts.slice(0, 8);
     object-position: 35% 55%;
   }
   .hero__photo :global(.hero__blob) {
-    top: -40px;
-    left: -60px;
-    width: 220px;
+    top: -110px;
+    left: -90px;
+    width: 380px;
   }
   .hero__side {
     display: flex;
@@ -249,10 +249,9 @@ const posts = instagram.posts.slice(0, 8);
     background: var(--surface-000);
   }
   .intro :global(.intro__blob) {
-    top: -60px;
-    right: -120px;
-    width: 420px;
-    opacity: 0.9;
+    top: -120px;
+    right: -200px;
+    width: 560px;
   }
   .intro__inner {
     position: relative;
@@ -369,8 +368,8 @@ const posts = instagram.posts.slice(0, 8);
   }
   .photo-band :global(.photo-band__blob) {
     right: 16px;
-    bottom: -26px;
-    width: 120px;
+    bottom: -16px;
+    width: 110px;
   }
 
   /* ---------- 診療案内 ---------- */
@@ -485,8 +484,8 @@ const posts = instagram.posts.slice(0, 8);
   }
   .first :global(.first__blob) {
     top: -70px;
-    right: -110px;
-    width: 220px;
+    right: -150px;
+    width: 300px;
   }
   .first__inner {
     position: relative;
@@ -735,9 +734,9 @@ const posts = instagram.posts.slice(0, 8);
       height: 400px;
     }
     .photo-band :global(.photo-band__blob) {
-      width: 180px;
-      right: 40px;
-      bottom: -40px;
+      width: 250px;
+      right: 8px;
+      bottom: -34px;
     }
     .medical {
       gap: var(--space-6);
@@ -814,9 +813,9 @@ const posts = instagram.posts.slice(0, 8);
       border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
     }
     .hero__photo :global(.hero__blob) {
-      top: -70px;
-      left: -90px;
-      width: 340px;
+      top: -330px;
+      left: -250px;
+      width: 1060px;
     }
     .hero__side {
       display: flex;
@@ -832,9 +831,9 @@ const posts = instagram.posts.slice(0, 8);
       line-height: 1.5;
     }
     .intro :global(.intro__blob) {
-      right: -80px;
-      top: -120px;
-      width: 560px;
+      right: -260px;
+      top: -200px;
+      width: 900px;
     }
     .news {
       grid-template-columns: 300px 1fr;
@@ -845,14 +844,14 @@ const posts = instagram.posts.slice(0, 8);
     }
     .medical :global(.medical__blob) {
       display: block;
-      right: 0;
-      top: -10px;
-      width: 120px;
+      right: 48px;
+      top: -6px;
+      width: 150px;
     }
     .first :global(.first__blob) {
-      right: -60px;
-      top: -80px;
-      width: 460px;
+      right: -120px;
+      top: -90px;
+      width: 780px;
     }
     .first__inner {
       padding-block: 72px 72px;
