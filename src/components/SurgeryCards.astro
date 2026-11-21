@@ -1,5 +1,5 @@
 ---
-/** 4術式のカード。生成りの面の上に置く白いカード (トップの手術ブロック・手術のご案内) */
+/** 術式のカード (clinic.json の surgeries)。生成りの面の上に置く白いカード (トップの手術ブロック・手術のご案内)。枚数に応じて 1 行に並ぶ */
 import { clinic } from '@/lib/site';
 
 interface Props {
@@ -56,7 +56,7 @@ const { detailed = false } = Astro.props;
   }
   @media (min-width: 768px) {
     .surgery-cards {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
       gap: 16px;
     }
     .surgery-cards--detailed {
