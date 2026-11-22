@@ -112,7 +112,8 @@ const posts = instagram.posts.slice(0, 8);
   <!-- 院内写真 -->
   <div class="photo-band">
     <img src="/images/placeholder-interior.svg" alt="待合室" width="1600" height="600" loading="lazy" />
-    <LogoShape part="mark" class="photo-band__mark" />
+    <LogoShape part="blue" color="blue" class="photo-band__blue" />
+    <LogoShape part="green" color="green" class="photo-band__green" />
   </div>
 
   <!-- 診療案内 -->
@@ -365,11 +366,17 @@ const posts = instagram.posts.slice(0, 8);
     height: 220px;
     object-fit: cover;
   }
-  /* ロゴマーク全体。青の眉と目が写真の下辺にまたがり、緑の山が次の見出しの高さに来る (Figma と同じ比率) */
-  .photo-band :global(.photo-band__mark) {
-    right: 12px;
-    bottom: -64px;
+  /* ロゴの青 (眉と目) が写真の下辺にまたがり、緑の山が次の見出しの横に来る。
+     Figma の採寸: 青の幅を 1 とすると、緑の幅 0.65、緑の上端は写真下辺の 0.38 下、緑の中心は青の中心より 0.08 右 */
+  .photo-band :global(.photo-band__blue) {
+    right: 0;
+    bottom: -10px;
     width: 120px;
+  }
+  .photo-band :global(.photo-band__green) {
+    right: 12px;
+    bottom: -74px;
+    width: 78px;
   }
 
   /* ---------- 診療案内 ---------- */
@@ -730,10 +737,14 @@ const posts = instagram.posts.slice(0, 8);
     .photo-band img {
       height: 400px;
     }
-    .photo-band :global(.photo-band__mark) {
+    .photo-band :global(.photo-band__blue) {
       width: 200px;
-      right: 8px;
-      bottom: -114px;
+      bottom: -15px;
+    }
+    .photo-band :global(.photo-band__green) {
+      width: 130px;
+      right: 19px;
+      bottom: -121px;
     }
     .medical {
       gap: var(--space-6);
@@ -839,10 +850,18 @@ const posts = instagram.posts.slice(0, 8);
     .medical__cards {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
-    .photo-band :global(.photo-band__mark) {
-      width: 274px;
-      right: 0;
-      bottom: -155px;
+    .photo-band :global(.photo-band__blue) {
+      width: 260px;
+      bottom: -20px;
+    }
+    .photo-band :global(.photo-band__green) {
+      width: 170px;
+      right: 25px;
+      bottom: -157px;
+    }
+    .medical {
+      padding-top: 72px;
+      gap: 48px;
     }
     .first :global(.first__blob) {
       right: -120px;

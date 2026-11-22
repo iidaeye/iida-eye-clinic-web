@@ -85,7 +85,7 @@ const lineLabel = locale === 'ja' ? 'LINEで順番をとる' : 'Check in via LIN
 </header>
 
 <a class="side-tab" href="#hours">
-  <Icon name="clock" size={20} />
+  <Icon name="clock" size={24} />
   <span>{locale === 'ja' ? '診療時間' : 'Hours'}</span>
 </a>
 
@@ -280,17 +280,17 @@ const lineLabel = locale === 'ja' ? 'LINEで順番をとる' : 'Check in via LIN
     .side-tab {
       position: fixed;
       right: 0;
-      top: 180px;
+      top: 170px;
       z-index: 40;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
-      padding: 18px 12px 22px;
+      gap: 16px;
+      padding: 26px 20px 30px;
       background: var(--brand-blue);
       color: #fff;
-      border-radius: var(--radius-md) 0 0 var(--radius-md);
-      font-size: 13px;
+      border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+      font-size: 16px;
       font-weight: 700;
     }
     .side-tab span {
