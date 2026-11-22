@@ -63,9 +63,10 @@ const mark = (v: string) => {
   .hours {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
   }
   .hours__table {
+    padding-bottom: 10px;
     background: var(--surface-white);
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -74,36 +75,37 @@ const mark = (v: string) => {
   }
   .hours__row {
     display: grid;
-    grid-template-columns: 1.9fr repeat(7, minmax(0, 1fr));
+    grid-template-columns: 2.1fr repeat(7, minmax(0, 1fr));
     align-items: center;
   }
   .hours__row + .hours__row {
     border-top: var(--border-hair) solid var(--line-050);
   }
   .hours__row--head > div {
-    padding: 12px 2px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    padding: 14px 2px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
     color: var(--accent-700);
   }
   .hours__corner {
     background: var(--surface-100);
     color: var(--ink-900) !important;
-    letter-spacing: 0.12em !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.14em !important;
   }
   .hours__row > div {
-    padding: 12px 2px;
+    padding: 14px 2px;
   }
   .hours__label {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    font-weight: 700;
+    font-weight: 500;
     line-height: 1.4;
     color: var(--accent-700);
   }
   .hours__time {
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0;
     white-space: nowrap;
@@ -114,40 +116,59 @@ const mark = (v: string) => {
   }
   .hours__cell--open {
     color: var(--brand-blue);
-    font-size: 13px;
+    font-size: 14px;
   }
   .hours__cell--surgery {
     color: var(--brand-blue);
-    font-size: 10px;
+    font-size: 10.5px;
+    font-weight: 500;
     letter-spacing: 0;
   }
   .hours__cell--closed {
     color: var(--brand-blue);
-    opacity: 0.55;
-    font-weight: 400;
+    opacity: 0.7;
+    font-weight: 300;
+    font-size: 14px;
   }
   .hours__note {
+    padding-inline: 18px;
     font-size: 11.5px;
     line-height: 1.8;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.04em;
     color: var(--ink-700);
   }
   @media (min-width: 768px) {
     .hours__table {
+      font-size: 14px;
+      padding-bottom: 16px;
+    }
+    .hours__row {
+      grid-template-columns: 2.3fr repeat(7, minmax(0, 1fr));
+    }
+    .hours__row--head > div {
+      padding: 18px 4px;
+    }
+    .hours__row > div {
+      padding: 15px 4px;
+    }
+    .hours__label {
       font-size: 13px;
     }
-    .hours__row--head > div,
-    .hours__row > div {
-      padding: 14px 4px;
-    }
     .hours__time {
-      font-size: 12px;
+      font-size: 14px;
+    }
+    .hours__cell--open {
+      font-size: 15px;
     }
     .hours__cell--surgery {
-      font-size: 11px;
+      font-size: 13px;
+    }
+    .hours__cell--closed {
+      font-size: 16px;
     }
     .hours__note {
       font-size: 12.5px;
+      padding-inline: 26px;
     }
   }
 </style>

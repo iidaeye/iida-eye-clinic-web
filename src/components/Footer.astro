@@ -37,8 +37,8 @@ const ja = locale === 'ja';
             {ja ? 'Googleマップで見る' : 'Open in Google Maps'}
           </a>
         </div>
-        <div class="footer__fact">
-          <dt><Icon name="car" size={22} /><span class="visually-hidden">{ja ? '駐車場' : 'Parking'}</span></dt>
+        <div class="footer__fact footer__fact--ink">
+          <dt><Icon name="car" size={26} /><span class="visually-hidden">{ja ? '駐車場' : 'Parking'}</span></dt>
           <dd>{ja ? clinic.parking : 'Free parking for 40 cars'}</dd>
         </div>
         <div class="footer__fact">
@@ -50,12 +50,12 @@ const ja = locale === 'ja';
       <Hours locale={locale} />
 
       <div class="footer__actions">
-        <a class="btn btn--line" href={clinic.links.line} target="_blank" rel="noopener">
-          <Icon name="line" size={24} />
+        <a class="btn btn--line btn--block" href={clinic.links.line} target="_blank" rel="noopener">
+          <Icon name="line" size={26} />
           {ja ? 'LINEで順番をとる' : 'Check in via LINE'}
         </a>
-        <a class="btn btn--brown" href={clinic.telHref}>
-          <Icon name="phone" size={18} />
+        <a class="btn btn--brown btn--block" href={clinic.telHref}>
+          <Icon name="phone" size={20} />
           {ja ? '電話をかける' : 'Call us'}
         </a>
       </div>
@@ -130,15 +130,16 @@ const ja = locale === 'ja';
   .footer__logo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    margin-bottom: 8px;
   }
   .footer__logo img:first-child {
-    width: 51px;
-    height: 40px;
+    width: 64px;
+    height: 50px;
   }
   .footer__logo img:last-child {
-    width: 144px;
-    height: 40px;
+    width: 180px;
+    height: 50px;
   }
   .footer__facts {
     margin: 0;
@@ -146,18 +147,21 @@ const ja = locale === 'ja';
   .footer__fact {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 14px 0;
-    border-bottom: var(--border-hair) solid var(--line-050);
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    gap: 14px;
+    padding: 18px 0;
+    border-bottom: var(--border-hair) solid var(--line-100);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     line-height: 1.7;
     color: var(--ink-900);
   }
   .footer__fact dt {
     display: flex;
     color: var(--brand-blue);
+  }
+  .footer__fact--ink dt {
+    color: var(--ink-900);
   }
   .footer__fact dd {
     margin: 0;
@@ -169,9 +173,12 @@ const ja = locale === 'ja';
   }
   .footer__fact--address .btn {
     flex-shrink: 0;
+    font-weight: 500;
+    letter-spacing: 0.1em;
   }
   .footer__tel {
-    font-size: 24px;
+    font-size: 26px;
+    font-weight: 700;
     letter-spacing: 0.04em;
     font-variant-numeric: tabular-nums;
   }
@@ -180,7 +187,9 @@ const ja = locale === 'ja';
     gap: 12px;
   }
   .footer__actions .btn {
-    min-height: 56px;
+    padding-inline: 16px;
+    font-size: 14px;
+    white-space: nowrap;
   }
 
   .footer__right {
@@ -190,30 +199,31 @@ const ja = locale === 'ja';
   }
   .cards {
     background: var(--surface-white);
-    border-radius: var(--radius-lg);
+    border: var(--border-hair) solid var(--line-050);
+    border-radius: var(--radius-sm);
     overflow: hidden;
   }
   .cards__title {
-    padding: 12px 20px;
+    padding: 8px 20px;
     border-bottom: var(--border-hair) solid var(--line-050);
     text-align: center;
-    font-size: 12.5px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: var(--ink-900);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--ink-700);
   }
   .cards__list {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px 10px;
-    padding: 16px 20px;
+    gap: 10px 12px;
+    padding: 18px 20px;
   }
   .cards__list li {
-    padding: 2px 12px;
+    padding: 3px 12px;
     border: var(--border-hair) solid var(--line-100);
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 700;
     letter-spacing: 0.04em;
     color: var(--ink-700);
@@ -222,46 +232,59 @@ const ja = locale === 'ja';
   .sitemap {
     display: flex;
     flex-direction: column;
-    gap: 22px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    line-height: 1.8;
+    gap: 28px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    line-height: 1.6;
   }
   .sitemap__group {
     display: grid;
-    gap: 6px;
+    gap: 8px;
   }
   .sitemap__head {
-    font-size: 14px;
+    font-size: 17px;
+    font-weight: 700;
     color: var(--ink-900);
   }
   .sitemap__items {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 2px 16px;
+    gap: 8px 16px;
   }
   .sitemap__items a,
   .sitemap__single a,
   .sitemap__legal a {
-    color: var(--ink-700);
+    color: var(--ink-900);
   }
   .sitemap__items a::before {
-    content: '―';
-    margin-right: 8px;
-    color: var(--accent-400);
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 2px;
+    margin-right: 10px;
+    vertical-align: middle;
+    background: var(--accent-400);
   }
   .sitemap__single,
   .sitemap__legal {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 28px;
+    gap: 8px 40px;
   }
-  .sitemap__single a {
-    color: var(--ink-900);
+  .sitemap__single {
+    margin-top: 8px;
+    font-size: 17px;
+    font-weight: 700;
   }
   .sitemap__legal {
-    font-weight: 500;
+    gap: 8px 0;
+    font-size: 15px;
+  }
+  .sitemap__legal li + li::before {
+    content: '／';
+    margin-inline: 22px;
+    color: var(--ink-700);
   }
   .footer__bottom {
     margin-top: var(--space-6);
@@ -279,17 +302,25 @@ const ja = locale === 'ja';
   @media (min-width: 768px) {
     .footer__actions {
       grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+    .sitemap {
+      gap: 44px;
     }
     .sitemap__group {
-      grid-template-columns: 150px 1fr;
-      gap: 0 24px;
-    }
-    .sitemap__head {
-      position: relative;
+      grid-template-columns: 137px 1fr;
+      gap: 0 28px;
     }
     .sitemap__items {
+      grid-template-columns: 186px auto;
+      gap: 10px 0;
+      padding-left: 28px;
       border-left: var(--border-hair) solid var(--line-100);
-      padding-left: 24px;
+      white-space: nowrap;
+    }
+    .sitemap__single {
+      gap: 8px 40px;
+      font-size: 16px;
     }
   }
   @media (min-width: 1024px) {
@@ -297,11 +328,11 @@ const ja = locale === 'ja';
       padding-top: var(--space-8);
     }
     .footer__inner {
-      grid-template-columns: minmax(0, 11fr) minmax(0, 13fr);
-      gap: var(--space-8);
+      grid-template-columns: minmax(0, 500fr) minmax(0, 585fr);
+      gap: 92px;
     }
     .footer__right {
-      padding-top: 72px;
+      padding-top: 92px;
     }
   }
 </style>

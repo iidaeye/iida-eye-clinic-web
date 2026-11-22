@@ -77,7 +77,7 @@ button {
 
 .container {
   width: 100%;
-  max-width: 1280px;
+  max-width: 1308px; /* 左右 64px を除いた内容幅 1180px (Figma) */
   margin-inline: auto;
   padding-inline: var(--space-4);
 }
@@ -303,6 +303,9 @@ button {
 }
 .btn--block {
   width: 100%;
+  min-height: 58px;
+  border-radius: var(--radius-btn);
+  font-size: 15px;
 }
 
 .card {
