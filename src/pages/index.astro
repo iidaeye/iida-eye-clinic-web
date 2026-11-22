@@ -112,14 +112,13 @@ const posts = instagram.posts.slice(0, 8);
   <!-- 院内写真 -->
   <div class="photo-band">
     <img src="/images/placeholder-interior.svg" alt="待合室" width="1600" height="600" loading="lazy" />
-    <LogoShape part="blue" color="blue" class="photo-band__blob" />
+    <LogoShape part="mark" class="photo-band__mark" />
   </div>
 
   <!-- 診療案内 -->
   <section class="medical container section" id="medical">
     <div class="medical__head">
       <h2 class="heading heading--center">診療案内<span class="sub">Medical Information</span></h2>
-      <LogoShape part="green" color="green" class="medical__blob" />
     </div>
     <ul class="medical__cards">
       {medical.map((m) => (
@@ -366,10 +365,11 @@ const posts = instagram.posts.slice(0, 8);
     height: 220px;
     object-fit: cover;
   }
-  .photo-band :global(.photo-band__blob) {
-    right: 16px;
-    bottom: -16px;
-    width: 110px;
+  /* ロゴマーク全体。青の眉と目が写真の下辺にまたがり、緑の山が次の見出しの高さに来る (Figma と同じ比率) */
+  .photo-band :global(.photo-band__mark) {
+    right: 12px;
+    bottom: -64px;
+    width: 120px;
   }
 
   /* ---------- 診療案内 ---------- */
@@ -379,9 +379,6 @@ const posts = instagram.posts.slice(0, 8);
   }
   .medical__head {
     position: relative;
-  }
-  .medical :global(.medical__blob) {
-    display: none;
   }
   .medical__cards {
     display: grid;
@@ -733,10 +730,10 @@ const posts = instagram.posts.slice(0, 8);
     .photo-band img {
       height: 400px;
     }
-    .photo-band :global(.photo-band__blob) {
-      width: 250px;
+    .photo-band :global(.photo-band__mark) {
+      width: 200px;
       right: 8px;
-      bottom: -34px;
+      bottom: -114px;
     }
     .medical {
       gap: var(--space-6);
@@ -842,11 +839,10 @@ const posts = instagram.posts.slice(0, 8);
     .medical__cards {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
-    .medical :global(.medical__blob) {
-      display: block;
-      right: 48px;
-      top: -6px;
-      width: 150px;
+    .photo-band :global(.photo-band__mark) {
+      width: 274px;
+      right: 0;
+      bottom: -155px;
     }
     .first :global(.first__blob) {
       right: -120px;
