@@ -9,6 +9,9 @@
   "workers_dev": true,
   // main 以外のブランチのプレビューURL
   "preview_urls": true,
+  // Workers Builds が main 以外のブランチで実行する `npx wrangler preview` に必要 (空でよい)。
+  // assets などの設定はトップレベルのものがそのまま使われる
+  "previews": {},
   "assets": {
     "directory": "./dist",
     // /news のような拡張子なしURLに news.html を返す (astro.config の build.format: 'file' と対応)

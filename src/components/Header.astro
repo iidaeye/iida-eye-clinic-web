@@ -1,4 +1,9 @@
 ---
+/**
+ * ヘッダー。PC: 白い上段 (ロゴ・電話・Instagram・LINE) + 生成りの地の上に白いナビ帯。右端に固定の「診療時間」タブ。
+ * モバイル: ロゴ + LINE + ハンバーガー。
+ */
+import Icon from '@/components/Icon.astro';
 import { clinic, nav, navEn, isCurrent, type Locale } from '@/lib/site';
 
 interface Props {
@@ -8,36 +13,54 @@ const { locale = 'ja' } = Astro.props;
 const items = locale === 'ja' ? nav : navEn;
 const path = Astro.url.pathname;
 const home = locale === 'ja' ? '/' : '/en';
+const lineLabel = locale === 'ja' ? 'LINEで順番をとる' : 'Check in via LINE';
 ---
 
 <header class="header">
-  <div class="container header__inner">
+  <div class="container header__bar">
     <a class="logo" href={home} aria-label={`${clinic.name} ${clinic.nameEn}`}>
       <img src="/logo/mark.svg" alt="" aria-hidden="true" width="51" height="40" />
       <img src="/logo/wordmark.svg" alt={`${clinic.name} ${clinic.nameEn}`} width="144" height="40" />
     </a>
 
-    <nav class="nav" aria-label={locale === 'ja' ? 'グローバルナビゲーション' : 'Main navigation'}>
-      <ul>
-        {items.map((item) => (
-          <li>
-            <a href={item.href} aria-current={isCurrent(path, item.href) ? 'page' : undefined}>{item.label}</a>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <div class="header__contact">
+      <a class="tel" href={clinic.telHref}>
+        <Icon name="phone" size={22} class="tel__icon" />
+        <span class="tel__num">{clinic.tel}</span>
+      </a>
+      <p class="tel__note">{locale === 'ja' ? clinic.hours.closedNote : clinic.hours.closedNoteEn}</p>
+    </div>
 
-    <div class="actions">
-      <a class="lang" href={locale === 'ja' ? '/en' : '/'} lang={locale === 'ja' ? 'en' : 'ja'}>
-        {locale === 'ja' ? 'EN' : '日本語'}
-      </a>
-      <a class="btn btn--tel" href={clinic.telHref}>{clinic.tel}</a>
-      <a class="btn btn--line" href={clinic.links.line} target="_blank" rel="noopener">
-        {locale === 'ja' ? 'LINEで順番をとる' : 'Check in via LINE'}
-      </a>
-      <button class="menu-btn" type="button" aria-label={locale === 'ja' ? 'メニュー' : 'Menu'} aria-expanded="false" aria-controls="mobile-nav">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
-      </button>
+    <a class="insta" href={clinic.links.instagram} target="_blank" rel="noopener">
+      <Icon name="instagram" size={26} />
+      <span>Instagram</span>
+    </a>
+
+    <a class="btn btn--line header__line" href={clinic.links.line} target="_blank" rel="noopener">
+      <Icon name="line" size={22} />
+      {lineLabel}
+    </a>
+
+    <a class="lang" href={locale === 'ja' ? '/en' : '/'} lang={locale === 'ja' ? 'en' : 'ja'}>
+      {locale === 'ja' ? 'EN' : '日本語'}
+    </a>
+
+    <button class="menu-btn" type="button" aria-label={locale === 'ja' ? 'メニュー' : 'Menu'} aria-expanded="false" aria-controls="mobile-nav">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+    </button>
+  </div>
+
+  <div class="header__navwrap">
+    <div class="container">
+      <nav class="nav" aria-label={locale === 'ja' ? 'グローバルナビゲーション' : 'Main navigation'}>
+        <ul>
+          {items.map((item) => (
+            <li>
+              <a href={item.href} aria-current={isCurrent(path, item.href) ? 'page' : undefined}>{item.label}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </div>
   </div>
 
@@ -48,19 +71,23 @@ const home = locale === 'ja' ? '/' : '/en';
       ))}
       {locale === 'ja' && (
         <>
-          <li><a href="/news">お知らせ</a></li>
+          <li><a href="/column">コラム</a></li>
           <li><a href="/disclosure">掲示事項</a></li>
         </>
       )}
     </ul>
     <div class="mobile-nav__actions">
-      <a class="btn btn--block" href={clinic.telHref}>{clinic.tel}</a>
-      <a class="btn btn--line btn--block" href={clinic.links.line} target="_blank" rel="noopener">
-        {locale === 'ja' ? 'LINEで順番をとる' : 'Check in via LINE'}
-      </a>
+      <a class="btn btn--brown btn--block" href={clinic.telHref}><Icon name="phone" size={18} />{clinic.tel}</a>
+      <a class="btn btn--line btn--block" href={clinic.links.line} target="_blank" rel="noopener"><Icon name="line" size={22} />{lineLabel}</a>
+      <a class="btn btn--white btn--block" href={clinic.links.instagram} target="_blank" rel="noopener"><Icon name="instagram" size={20} />Instagram</a>
     </div>
   </nav>
 </header>
+
+<a class="side-tab" href="#hours">
+  <Icon name="clock" size={24} />
+  <span>{locale === 'ja' ? '診療時間' : 'Hours'}</span>
+</a>
 
 <script>
   const btn = document.querySelector<HTMLButtonElement>('.menu-btn');
@@ -74,21 +101,20 @@ const home = locale === 'ja' ? '/' : '/en';
 
 <style>
   .header {
-    background: var(--surface-000);
-    border-bottom: var(--border-hair) solid var(--line-200);
+    background: var(--surface-white);
   }
-  .header__inner {
+  .header__bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--space-4);
-    min-height: 68px;
+    gap: 10px;
+    min-height: 64px;
   }
   .logo {
     display: flex;
     align-items: center;
     gap: 10px;
     flex-shrink: 0;
+    margin-right: auto;
   }
   .logo img:first-child {
     width: 41px;
@@ -98,43 +124,19 @@ const home = locale === 'ja' ? '/' : '/en';
     width: 115px;
     height: 32px;
   }
-  .nav {
+
+  .header__contact,
+  .insta,
+  .lang,
+  .header__navwrap {
     display: none;
   }
-  .nav ul {
-    display: flex;
-    gap: 28px;
-  }
-  .nav a {
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    color: var(--ink-700);
-    padding-bottom: 4px;
-    border-bottom: 2px solid transparent;
-  }
-  .nav a[aria-current='page'] {
-    color: var(--navy-700);
-    border-bottom-color: var(--navy-700);
-  }
-  .actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .lang {
-    display: none;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: var(--ink-500);
-    margin-right: 4px;
-  }
-  .btn--tel,
-  .btn--line {
-    display: none;
-    min-height: 42px;
-    padding: 0 18px;
+  .header__line {
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 12.5px;
+    gap: 6px;
+    white-space: nowrap;
   }
   .menu-btn {
     display: inline-flex;
@@ -142,14 +144,15 @@ const home = locale === 'ja' ? '/' : '/en';
     justify-content: center;
     width: 44px;
     height: 44px;
-    border: 1.5px solid var(--navy-700);
-    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--brand-blue);
+    border-radius: var(--radius-md);
     background: var(--surface-white);
-    color: var(--navy-700);
+    color: var(--brand-blue);
     cursor: pointer;
   }
+
   .mobile-nav {
-    border-top: var(--border-hair) solid var(--line-200);
+    border-top: var(--border-hair) solid var(--line-100);
     background: var(--surface-card);
   }
   .mobile-nav ul {
@@ -158,7 +161,8 @@ const home = locale === 'ja' ? '/' : '/en';
   .mobile-nav li a {
     display: block;
     padding: 14px 0;
-    font-weight: 500;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     border-bottom: var(--border-hair) solid var(--line-100);
   }
   .mobile-nav__actions {
@@ -168,9 +172,14 @@ const home = locale === 'ja' ? '/' : '/en';
     padding: var(--space-4);
   }
 
+  .side-tab {
+    display: none;
+  }
+
   @media (min-width: 1024px) {
-    .header__inner {
-      min-height: 80px;
+    .header__bar {
+      min-height: 84px;
+      gap: 28px;
     }
     .logo img:first-child {
       width: 51px;
@@ -180,18 +189,117 @@ const home = locale === 'ja' ? '/' : '/en';
       width: 144px;
       height: 40px;
     }
-    .nav,
-    .lang,
-    .btn--tel,
-    .btn--line {
-      display: inline-flex;
+    .header__contact {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
     }
-    .nav {
-      display: block;
+    .tel {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink-900);
+    }
+    .tel__icon {
+      color: var(--brand-blue);
+    }
+    .tel__num {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+    .tel__note {
+      font-size: 11px;
+      line-height: 1.5;
+      letter-spacing: 0.02em;
+      color: var(--ink-500);
+    }
+    .insta {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ink-900);
+    }
+    .header__line {
+      min-height: 50px;
+      padding: 0 24px;
+      font-size: 14px;
+      gap: 10px;
+    }
+    .lang {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--ink-500);
     }
     .menu-btn,
     .mobile-nav {
       display: none;
+    }
+
+    /* ナビ帯: 生成りの地の上に白い帯 (下の角だけ丸い) */
+    .header__navwrap {
+      display: block;
+      background: var(--surface-000);
+    }
+    .nav {
+      margin-left: auto;
+      width: fit-content;
+      padding: 0 40px;
+      background: var(--surface-white);
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    }
+    .nav ul {
+      display: flex;
+      gap: 40px;
+    }
+    .nav a {
+      display: inline-block;
+      padding: 16px 0 14px;
+      font-size: 14.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--ink-900);
+      border-bottom: 2px solid transparent;
+    }
+    .nav a:hover,
+    .nav a[aria-current='page'] {
+      color: var(--brand-blue);
+      border-bottom-color: var(--brand-blue);
+    }
+
+    /* 右端の固定タブ */
+    .side-tab {
+      position: fixed;
+      right: 0;
+      top: 170px;
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 26px 20px 30px;
+      background: var(--brand-blue);
+      color: #fff;
+      border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .side-tab span {
+      writing-mode: vertical-rl;
+      letter-spacing: 0.3em;
+    }
+    .side-tab:hover {
+      color: #fff;
+      background: #1b579b;
     }
   }
 </style>

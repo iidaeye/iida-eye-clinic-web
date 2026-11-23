@@ -1,5 +1,5 @@
 ---
-/** 術式のカード (clinic.json の surgeries)。紺背景のセクション内で使う前提 (トップ・手術のご案内) */
+/** 術式のカード (clinic.json の surgeries)。生成りの面の上に置く白いカード (トップの手術ブロック・手術のご案内)。枚数に応じて 1 行に並ぶ */
 import { clinic } from '@/lib/site';
 
 interface Props {
@@ -29,45 +29,54 @@ const { detailed = false } = Astro.props;
   .surgery-card {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 10px;
     height: 100%;
-    padding: 18px 16px;
+    padding: 16px 16px 18px;
     background: var(--surface-000);
-    border-top: var(--border-accent) solid var(--brand-green);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-btn);
   }
   .surgery-card:hover {
-    background: var(--surface-card);
     color: inherit;
   }
+  .surgery-card:hover .surgery-card__name {
+    color: var(--brand-blue);
+  }
   .surgery-card__name {
-    font-size: 15.5px;
+    padding-bottom: 10px;
+    border-bottom: var(--border-hair) solid var(--line-050);
+    font-size: 15px;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.08em;
     color: var(--ink-900);
   }
   .surgery-card__text {
-    font-size: 11.5px;
-    line-height: 1.7;
+    font-size: 12px;
+    line-height: 1.8;
     color: var(--ink-700);
   }
   @media (min-width: 768px) {
     .surgery-cards {
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 16px;
     }
     .surgery-cards--detailed {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .surgery-card {
-      padding: 26px 24px;
-      gap: 10px;
+      padding: 22px 22px 24px;
+      gap: 14px;
     }
     .surgery-card__name {
-      font-size: 18px;
+      font-size: 17px;
+      padding-bottom: 14px;
     }
     .surgery-card__text {
-      font-size: 13px;
+      font-size: 14px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .surgery-cards {
+      gap: 30px;
     }
   }
 </style>

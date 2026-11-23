@@ -1,0 +1,58 @@
+---
+/**
+ * ロゴマーク (public/logo/mark.svg) の一部を飾りとして置く。Figma 案の装飾はすべてロゴの形の拡大なので、
+ * 自前の図形は描かず、ロゴのパスをそのまま使う。装飾のみ (aria-hidden)。位置と大きさは呼び出し側の class で指定する。
+ *   green: 緑の山形 / eye-left, eye-right: 青い目 / brow-left, brow-right: 青い眉 / blue: 青い4つ全部 / mark: マーク全体 (青+緑、ロゴ本来の配色と比率)
+ */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+interface Props {
+  part: LogoPart;
+  color?: 'blue' | 'green' | 'cream' | 'sky';
+  class?: string;
+}
+export type LogoPart = 'green' | 'eye-left' | 'eye-right' | 'brow-left' | 'brow-right' | 'blue' | 'mark';
+
+const { part, color = 'blue', class: cls } = Astro.props;
+
+// mark.svg の path は出現順に 0:緑の山 1:右目 2:右眉 3:左目 4:左眉 5:青4つの合成
+// ビルド時に読む (import.meta.url は dist 側を指すので、プロジェクトルートから解決する)
+const svg = readFileSync(resolve(process.cwd(), 'public/logo/mark.svg'), 'utf8');
+const ds = [...svg.matchAll(/<path fill="[^"]+" d="([^"]+)"/g)].map((m) => m[1]);
+const index: Record<Exclude<LogoPart, 'mark'>, number> = { green: 0, 'eye-right': 1, 'brow-right': 2, 'eye-left': 3, 'brow-left': 4, blue: 5 };
+// 各パスの外接矩形 (getBBox で算出)。少し余白を足して viewBox にする
+const bbox: Record<LogoPart, [number, number, number, number]> = {
+  green: [279.23, 402.26, 36.33, 13.04],
+  'eye-right': [306.82, 372.61, 22.66, 9],
+  'brow-right': [307.92, 362.88, 23.68, 5.14],
+  'eye-left': [265.97, 373.65, 17.12, 8.71],
+  'brow-left': [263.16, 363.88, 18.51, 6.14],
+  blue: [263.17, 362.87, 68.44, 19.46],
+  mark: [261.16, 360.87, 72.45, 56.42],
+};
+const [x, y, w, h] = bbox[part];
+const pad = 0.4;
+const viewBox = `${x - pad} ${y - pad} ${w + pad * 2} ${h + pad * 2}`;
+const fills = { blue: 'var(--brand-blue)', green: 'var(--brand-green)', cream: 'var(--surface-100)', sky: 'var(--sky-200)' };
+---
+
+<svg class:list={['logo-shape', cls]} viewBox={viewBox} aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid meet">
+  {part === 'mark' ? (
+    <>
+      <path d={ds[0]} fill={fills.green} />
+      <path d={ds[5]} fill={fills.blue} />
+    </>
+  ) : (
+    <path d={ds[index[part]]} fill={fills[color]} />
+  )}
+</svg>
+
+<style>
+  .logo-shape {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+    height: auto;
+  }
+</style>
