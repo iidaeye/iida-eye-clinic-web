@@ -14,8 +14,10 @@ interface Props {
 }
 const { locale = 'ja', heading = true, note = true } = Astro.props;
 const h = clinic.hours;
-// 日曜と祝日は同じ扱いなので 1 列にまとめる
-const days = (locale === 'ja' ? h.days : h.daysEn).map((d, i, a) => (i === a.length - 1 ? (locale === 'ja' ? '日祝' : 'Sun/Hol') : d));
+// 日曜と祝日は同じ扱いなので 1 列にまとめる。英語は幅に収まらないので 2 行 (Sun / Hol.)
+const days: string[][] = (locale === 'ja' ? h.days : h.daysEn).map((d, i, a) =>
+  i === a.length - 1 ? (locale === 'ja' ? ['日祝'] : ['Sun', 'Hol.']) : [d],
+);
 const rows = [
   { label: locale === 'ja' ? '午前の診療' : 'Morning', time: h.consultation[0].time, cells: h.am },
   { label: locale === 'ja' ? '午後の診療' : 'Afternoon', time: h.consultation[1].time, cells: h.pm },
@@ -27,11 +29,20 @@ const mark = (v: string) => {
 };
 ---
 
-<div class="hours">
+<div class:list={['hours', { 'hours--en': locale !== 'ja' }]}>
   <div class="hours__table" role="table" aria-label={locale === 'ja' ? '診療時間' : 'Hours'}>
     <div class="hours__row hours__row--head" role="row">
       <div class="hours__corner" role="columnheader">{heading ? (locale === 'ja' ? '診療時間' : 'Hours') : ''}</div>
-      {days.map((d) => <div role="columnheader">{d}</div>)}
+      {days.map((d) => (
+        <div role="columnheader">
+          {d.map((line, i) => (
+            <>
+              {i > 0 && <br />}
+              {line}
+            </>
+          ))}
+        </div>
+      ))}
     </div>
     {rows.map((r) => (
       <div class="hours__row" role="row">
@@ -85,7 +96,15 @@ const mark = (v: string) => {
     padding: 14px 2px;
     font-weight: 500;
     letter-spacing: 0.1em;
+    line-height: 1.3;
     color: var(--accent-700);
+  }
+  .hours--en .hours__row--head > div {
+    letter-spacing: 0.02em;
+    font-size: 0.92em;
+  }
+  .hours--en .hours__corner {
+    letter-spacing: 0.08em !important;
   }
   .hours__corner {
     background: var(--surface-100);
